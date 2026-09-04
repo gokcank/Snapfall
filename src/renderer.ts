@@ -1,5 +1,6 @@
 import { HexGrid } from './grid';
-import { Bubble, COLOR_PALETTE, GridMatrix } from './types';
+import { CannonShooter } from './shooter';
+import { Bubble, COLOR_PALETTE, GridMatrix, Projectile, TrajectoryResult } from './types';
 
 export class CanvasRenderer {
   readonly ctx: CanvasRenderingContext2D;
@@ -56,7 +57,7 @@ export class CanvasRenderer {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
     ctx.stroke();
 
-    // Specular gloss reflection (Top-Left shiny pill)
+    // Specular gloss reflection
     ctx.beginPath();
     ctx.ellipse(
       x - r * 0.35,
@@ -70,13 +71,48 @@ export class CanvasRenderer {
     ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
     ctx.fill();
 
-    // Bottom subtle bounce light reflection
+    // Bottom bounce reflection
     ctx.beginPath();
     ctx.arc(x + r * 0.2, y + r * 0.4, r * 0.25, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
     ctx.fill();
 
     ctx.restore();
+  }
+
+  // Draw flying projectile
+  drawProjectile(p: Projectile) {
+    const bubble: Bubble = {
+      id: 'projectile',
+      color: p.color,
+      row: -1,
+      col: -1
+    };
+
+    // Projectile speed streak / subtle trail
+    const ctx = this.ctx;
+    ctx.save();
+    const speed = Math.hypot(p.vx, p.vy);
+    if (speed > 0) {
+      const trailLength = 28;
+      const tx = p.x - (p.vx / speed) * trailLength;
+      const ty = p.y - (p.vy / speed) * trailLength;
+
+      const grad = ctx.createLinearGradient(tx, ty, p.x, p.y);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+      grad.addColorStop(1, COLOR_PALETTE[p.color].glow);
+
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(p.x, p.y);
+      ctx.lineWidth = p.radius * 1.5;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = grad;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    this.drawBubble(p.x, p.y, bubble, 1.0, 1.0);
   }
 
   // Draw full hexagonal matrix
@@ -93,30 +129,153 @@ export class CanvasRenderer {
     }
   }
 
-  // Grid outline and slots visualization (for debugging / level preview)
-  drawGridGuide(hoverCoord: { row: number; col: number } | null = null) {
+  // Trajectory reflection line & ghost target snap preview
+  drawTrajectory(traj: TrajectoryResult, currentColor: import('./types').BubbleColor) {
     const ctx = this.ctx;
     ctx.save();
-    ctx.lineWidth = 1;
 
-    for (let r = 0; r < this.grid.maxRows; r++) {
-      const cols = this.grid.getColsInRow(r);
-      for (let c = 0; c < cols; c++) {
-        const pos = this.grid.gridToWorld(r, c);
-        const isHovered = hoverCoord && hoverCoord.row === r && hoverCoord.col === c;
+    // Dotted trajectory segments with pulse
+    const visual = COLOR_PALETTE[currentColor];
+    ctx.strokeStyle = visual.primary;
+    ctx.fillStyle = '#ffffff';
+
+    for (const seg of traj.segments) {
+      const dx = seg.end.x - seg.start.x;
+      const dy = seg.end.y - seg.start.y;
+      const length = Math.hypot(dx, dy);
+      const dotSpacing = 16;
+      const numDots = Math.floor(length / dotSpacing);
+
+      for (let i = 1; i <= numDots; i++) {
+        const t = (i * dotSpacing) / length;
+        const px = seg.start.x + dx * t;
+        const py = seg.start.y + dy * t;
+        const radius = 3.5;
 
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, this.grid.radius - 2, 0, Math.PI * 2);
-        ctx.strokeStyle = isHovered ? 'rgba(56, 189, 248, 0.9)' : 'rgba(255, 255, 255, 0.06)';
-        ctx.lineWidth = isHovered ? 2 : 1;
-        ctx.stroke();
-
-        if (isHovered) {
-          ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
-          ctx.fill();
-        }
+        ctx.arc(px, py, radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.shadowColor = visual.primary;
+        ctx.shadowBlur = 8;
+        ctx.fill();
       }
     }
+
+    // Ghost landing bubble indicator
+    if (traj.targetCell) {
+      const ghostPos = this.grid.gridToWorld(traj.targetCell.row, traj.targetCell.col);
+      const ghostBubble: Bubble = {
+        id: 'ghost',
+        color: currentColor,
+        row: traj.targetCell.row,
+        col: traj.targetCell.col
+      };
+
+      ctx.shadowBlur = 0;
+      this.drawBubble(ghostPos.x, ghostPos.y, ghostBubble, 0.45, 0.95);
+
+      ctx.beginPath();
+      ctx.arc(ghostPos.x, ghostPos.y, this.grid.radius, 0, Math.PI * 2);
+      ctx.strokeStyle = visual.light;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    ctx.restore();
+  }
+
+  // Sci-Fi Arcade Cannon Shooter
+  drawShooter(shooter: CannonShooter) {
+    const ctx = this.ctx;
+    const ox = shooter.origin.x;
+    const oy = shooter.origin.y;
+    const angle = shooter.angle;
+
+    ctx.save();
+
+    // 1. Shooter Base Pedestal Plate
+    ctx.beginPath();
+    ctx.arc(ox, oy, 48, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+    ctx.stroke();
+
+    // Outer ring notch markings
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
+      const nx = ox + Math.cos(a) * 44;
+      const ny = oy + Math.sin(a) * 44;
+      ctx.beginPath();
+      ctx.arc(nx, ny, 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.5)';
+      ctx.fill();
+    }
+
+    // 2. Rotating Cannon Barrel / Turret Arrow
+    ctx.save();
+    ctx.translate(ox, oy);
+    ctx.rotate(-angle + Math.PI / 2); // rotate to aim angle (0 deg angle = horizontal right)
+
+    // Barrel guide arms
+    ctx.fillStyle = 'rgba(30, 41, 59, 0.95)';
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(-18, -10);
+    ctx.lineTo(-12, -54);
+    ctx.lineTo(12, -54);
+    ctx.lineTo(18, -10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Nozzle tip accent glow
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillRect(-10, -56, 20, 4);
+
+    ctx.restore();
+
+    // 3. Loaded Bubble in Cannon Chamber
+    const reloadScale = 0.5 + 0.5 * shooter.reloadRatio;
+    const loadedBubble: Bubble = {
+      id: 'loaded',
+      color: shooter.currentBubbleColor,
+      row: -1,
+      col: -1
+    };
+    this.drawBubble(ox, oy, loadedBubble, 1.0, reloadScale);
+
+    // 4. Next Bubble Preview Dock (at the left side)
+    const nextX = ox - 80;
+    const nextY = oy + 6;
+
+    // Next bubble dock ring
+    ctx.beginPath();
+    ctx.arc(nextX, nextY, 28, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+    ctx.fill();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.stroke();
+
+    // "SONRAKİ" label
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 10px Outfit, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SONRAKİ', nextX, nextY + 40);
+
+    const nextBubble: Bubble = {
+      id: 'next',
+      color: shooter.nextBubbleColor,
+      row: -1,
+      col: -1
+    };
+    this.drawBubble(nextX, nextY, nextBubble, 0.9, 0.8);
+
     ctx.restore();
   }
 
@@ -125,14 +284,29 @@ export class CanvasRenderer {
     const ctx = this.ctx;
     ctx.save();
 
-    // Top ceiling bar
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
-    ctx.fillRect(0, 0, this.canvas.width, 2);
+    // Top ceiling bar with gradient
+    const ceilGrad = ctx.createLinearGradient(0, 0, this.canvas.width, 0);
+    ceilGrad.addColorStop(0, 'rgba(56, 189, 248, 0.3)');
+    ceilGrad.addColorStop(0.5, 'rgba(168, 85, 247, 0.5)');
+    ceilGrad.addColorStop(1, 'rgba(56, 189, 248, 0.3)');
+    ctx.fillStyle = ceilGrad;
+    ctx.fillRect(0, 0, this.canvas.width, 3);
 
     // Side wall subtle glow guides
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.lineWidth = 2;
     ctx.strokeRect(1, 0, this.canvas.width - 2, this.canvas.height);
+
+    // Danger line at bottom near shooter
+    const dangerY = this.grid.rowHeight * 12 + this.grid.radius;
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, dangerY);
+    ctx.lineTo(this.canvas.width, dangerY);
+    ctx.stroke();
+    ctx.setLineDash([]);
 
     ctx.restore();
   }

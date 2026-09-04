@@ -1,13 +1,13 @@
 {
   "name": "snapfall",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "tsx src/test_grid.ts && npm run build"
+    "test": "tsx src/test_grid.ts && tsx src/test_physics.ts && npm run build"
   },
   "devDependencies": {
     "tsx": "^4.23.13",

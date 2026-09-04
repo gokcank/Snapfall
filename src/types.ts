@@ -71,3 +71,23 @@ export interface Bubble {
 }
 
 export type GridMatrix = (Bubble | null)[][];
+
+export interface Projectile {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  color: BubbleColor;
+}
+
+export interface TrajectorySegment {
+  start: Vector2D;
+  end: Vector2D;
+}
+
+export interface TrajectoryResult {
+  segments: TrajectorySegment[];
+  hitType: 'ceiling' | 'bubble' | 'none';
+  targetCell: GridCoord | null;
+}
