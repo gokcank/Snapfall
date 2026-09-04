@@ -284,6 +284,9 @@ class BubbleShooterGame {
       }
     }
 
+    const { colors: activeColors, total: totalBubbles } = this.grid.getActiveColors(this.matrix);
+    this.shooter.resetColors(activeColors, totalBubbles);
+
     if (this.state === 'playing' && this.coordInfoEl) {
       this.coordInfoEl.textContent = this.mode === 'classic' ? `Seviye ${lvl} Başladı!` : 'Sonsuz Hayatta Kalma Başladı!';
     }
@@ -531,7 +534,8 @@ class BubbleShooterGame {
 
     this.shooter.stopAiming();
 
-    const color = this.shooter.consumeBubble();
+    const { colors: activeColors, total: totalBubbles } = this.grid.getActiveColors(this.matrix);
+    const color = this.shooter.consumeBubble(activeColors, totalBubbles);
     const speed = 1250;
     this.physics.launch(this.shooter.origin, this.shooter.angle, speed, color);
 

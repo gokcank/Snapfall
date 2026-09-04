@@ -1,4 +1,4 @@
-import { BubbleColor, Vector2D } from './types';
+import { BubbleColor, Vector2D } from "./types";
 
 export class CannonShooter {
   readonly origin: Vector2D;
@@ -7,6 +7,7 @@ export class CannonShooter {
   private nextColor: BubbleColor;
   private isAiming: boolean = false;
   private reloadProgress: number = 1.0; // 0 to 1
+  private lastWasOffBoard: boolean = false;
 
   private readonly availableColors: BubbleColor[] = [
     BubbleColor.RED,
@@ -16,10 +17,10 @@ export class CannonShooter {
     BubbleColor.PURPLE
   ];
 
-  constructor(origin: Vector2D) {
+  constructor(origin: Vector2D, initialColors?: BubbleColor[]) {
     this.origin = origin;
-    this.loadedColor = this.getRandomColor();
-    this.nextColor = this.getRandomColor();
+    this.loadedColor = this.getSmartColor(initialColors);
+    this.nextColor = this.getSmartColor(initialColors);
   }
 
   get angle(): number {
@@ -42,9 +43,45 @@ export class CannonShooter {
     return this.reloadProgress;
   }
 
-  private getRandomColor(): BubbleColor {
-    const idx = Math.floor(Math.random() * this.availableColors.length);
-    return this.availableColors[idx];
+  getSmartColor(activeColors?: BubbleColor[], totalBubbles?: number): BubbleColor {
+    // If no active colors provided or empty list, pick uniformly from all available colors
+    if (!activeColors || activeColors.length === 0) {
+      this.lastWasOffBoard = false;
+      const idx = Math.floor(Math.random() * this.availableColors.length);
+      return this.availableColors[idx];
+    }
+
+    // 1. Endgame / Victory Protection:
+    // If 8 or fewer bubbles remain on board, or only 1 color remains, 100% chance from active colors.
+    if ((totalBubbles !== undefined && totalBubbles <= 8) || activeColors.length === 1) {
+      this.lastWasOffBoard = false;
+      const idx = Math.floor(Math.random() * activeColors.length);
+      return activeColors[idx];
+    }
+
+    // Colors currently NOT on the board
+    const offBoardColors = this.availableColors.filter((c) => !activeColors.includes(c));
+
+    // 2. Anti-Spam / Streak Protection:
+    // If the previous generation was off-board, or if no off-board colors exist, force active color.
+    if (this.lastWasOffBoard || offBoardColors.length === 0) {
+      this.lastWasOffBoard = false;
+      const idx = Math.floor(Math.random() * activeColors.length);
+      return activeColors[idx];
+    }
+
+    // 3. Weighted Probabilistic RNG:
+    // 85% chance for active board colors, 15% chance for off-board colors.
+    const roll = Math.random();
+    if (roll < 0.85) {
+      this.lastWasOffBoard = false;
+      const idx = Math.floor(Math.random() * activeColors.length);
+      return activeColors[idx];
+    } else {
+      this.lastWasOffBoard = true;
+      const idx = Math.floor(Math.random() * offBoardColors.length);
+      return offBoardColors[idx];
+    }
   }
 
   setAimTarget(targetX: number, targetY: number) {
@@ -73,12 +110,18 @@ export class CannonShooter {
     this.isAiming = false;
   }
 
-  consumeBubble(): BubbleColor {
+  consumeBubble(activeColors?: BubbleColor[], totalBubbles?: number): BubbleColor {
     const fired = this.loadedColor;
     this.loadedColor = this.nextColor;
-    this.nextColor = this.getRandomColor();
+    this.nextColor = this.getSmartColor(activeColors, totalBubbles);
     this.reloadProgress = 0;
     return fired;
+  }
+
+  resetColors(activeColors?: BubbleColor[], totalBubbles?: number) {
+    this.lastWasOffBoard = false;
+    this.loadedColor = this.getSmartColor(activeColors, totalBubbles);
+    this.nextColor = this.getSmartColor(activeColors, totalBubbles);
   }
 
   update(dt: number) {

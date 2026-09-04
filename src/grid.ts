@@ -1,4 +1,4 @@
-import { GridCoord, Vector2D, GridMatrix, Bubble } from './types';
+import { GridCoord, Vector2D, GridMatrix, Bubble, BubbleColor } from './types';
 
 export class HexGrid {
   readonly radius: number;
@@ -110,6 +110,22 @@ export class HexGrid {
       }
     }
     return false;
+  }
+
+  getActiveColors(matrix: GridMatrix): { colors: BubbleColor[]; total: number } {
+    const colorSet = new Set<BubbleColor>();
+    let total = 0;
+    for (let r = 0; r < this.maxRows; r++) {
+      const cols = this.getColsInRow(r);
+      for (let c = 0; c < cols; c++) {
+        const b = matrix[r][c];
+        if (b !== null) {
+          colorSet.add(b.color);
+          total++;
+        }
+      }
+    }
+    return { colors: Array.from(colorSet), total };
   }
 
   lowerCeiling(steps: number = 1, dangerY: number = 520): boolean {
