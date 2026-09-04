@@ -1,20 +1,27 @@
 :root {
-  --bg-obsidian: #05050a;
-  --surface-dark: #0e0e14;
-  --surface-navy: rgba(10, 10, 26, 0.82);
-  --border-cyan: rgba(0, 242, 255, 0.28);
-  --border-violet: rgba(188, 0, 255, 0.25);
+  --bg-obsidian: #0f0d1a;
+  --surface-dark: #161329;
+  --surface-navy: rgba(22, 19, 41, 0.94);
+  --border-cyan: rgba(255, 214, 0, 0.35);
+  --border-violet: rgba(170, 0, 255, 0.3);
   
-  --neon-cyan: #00f2ff;
-  --neon-cyan-glow: rgba(0, 242, 255, 0.45);
-  --neon-violet: #bc00ff;
-  --neon-magenta: #ff00e5;
-  --neon-gold: #ffaa00;
-  --neon-emerald: #00ff66;
+  --neon-cyan: #2979ff;
+  --neon-cyan-glow: rgba(41, 121, 255, 0.35);
+  --neon-violet: #aa00ff;
+  --neon-magenta: #ff3355;
+  --neon-gold: #ffd600;
+  --neon-emerald: #00e676;
   
-  --text-main: #e4e1ea;
-  --text-dim: #94a3b8;
-  --text-cyan: #74f5ff;
+  --arcade-red: #ff3355;
+  --arcade-blue: #2979ff;
+  --arcade-green: #00e676;
+  --arcade-yellow: #ffd600;
+  --arcade-purple: #aa00ff;
+  --arcade-orange: #ff6d00;
+  
+  --text-main: #ffffff;
+  --text-dim: #a5a1c0;
+  --text-cyan: #ffd600;
 }
 
 * {
@@ -27,9 +34,9 @@
 
 body {
   background-color: var(--bg-obsidian);
-  background-image: radial-gradient(circle at center 20%, rgba(188, 0, 255, 0.08) 0%, rgba(5, 5, 10, 0.98) 100%);
+  background-image: radial-gradient(circle at center 30%, #251e44 0%, #0f0d1a 100%);
   color: var(--text-main);
-  font-family: 'Geist', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Fredoka', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
@@ -45,8 +52,8 @@ body {
   height: 96vh;
   max-height: 890px;
   background: var(--surface-navy);
-  border: 1px solid var(--border-cyan);
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 242, 255, 0.12);
+  border: 2px solid #362e5b;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 214, 0, 0.2) inset;
   border-radius: 28px;
   display: flex;
   flex-direction: column;
@@ -63,8 +70,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(0, 242, 255, 0.15);
-  background: rgba(14, 14, 20, 0.85);
+  border-bottom: 2px solid #2e2752;
+  background: rgba(22, 19, 41, 0.92);
   backdrop-filter: blur(12px);
   z-index: 10;
 }
@@ -75,7 +82,7 @@ body {
 }
 
 .hud-label {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1.2px;
@@ -99,19 +106,19 @@ body {
 }
 
 .hud-title {
-  font-family: 'Sora', sans-serif;
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: 3px;
-  background: linear-gradient(135deg, #00f2ff 0%, #ce5dff 100%);
+  font-family: 'Fredoka', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, #ffd600 0%, #ff3355 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-transform: uppercase;
-  filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.4));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }
 
 .hud-high {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
   font-size: 9px;
   font-weight: 700;
   color: var(--neon-gold);
@@ -160,7 +167,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at center, rgba(14, 14, 20, 0.3) 0%, rgba(5, 5, 10, 0.95) 100%);
+  background: radial-gradient(circle at center, #1b1735 0%, #0d0b17 100%);
 }
 
 canvas#gameCanvas {
@@ -179,7 +186,7 @@ canvas#gameCanvas {
   justify-content: space-between;
   border-top: 1px solid rgba(0, 242, 255, 0.15);
   background: rgba(14, 14, 20, 0.85);
-  font-family: 'Space Mono', monospace;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
   font-size: 11px;
   color: var(--text-dim);
   z-index: 10;
@@ -307,7 +314,7 @@ canvas#gameCanvas {
 }
 
 .stat-box-label {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
   font-size: 10px;
   color: #849495;
   text-transform: uppercase;
@@ -413,7 +420,7 @@ canvas#gameCanvas {
 }
 
 .menu-subtitle {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
   font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -435,7 +442,7 @@ canvas#gameCanvas {
 }
 
 .menu-high-label {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 2px;
@@ -467,7 +474,7 @@ canvas#gameCanvas {
 }
 
 .mode-selection-label {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -537,7 +544,7 @@ canvas#gameCanvas {
 }
 
 .setting-label {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
   font-size: 12px;
   font-weight: 700;
   color: var(--text-main);
@@ -551,7 +558,7 @@ canvas#gameCanvas {
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-dim);
-  font-family: 'Space Mono', monospace;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;

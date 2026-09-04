@@ -25,34 +25,34 @@ export interface ColorVisual {
 
 export const COLOR_PALETTE: Record<BubbleColor, ColorVisual> = {
   [BubbleColor.RED]: {
-    primary: '#ff0055',
-    light: '#ff7aa8',
-    dark: '#8a0029',
-    glow: 'rgba(255, 0, 85, 0.5)'
+    primary: '#ff3355',
+    light: '#ffa3b5',
+    dark: '#b31034',
+    glow: 'rgba(255, 51, 85, 0.4)'
   },
   [BubbleColor.BLUE]: {
-    primary: '#0077ff',
-    light: '#80bfff',
-    dark: '#003d8a',
-    glow: 'rgba(0, 119, 255, 0.5)'
+    primary: '#2979ff',
+    light: '#82b1ff',
+    dark: '#0d47a1',
+    glow: 'rgba(41, 121, 255, 0.4)'
   },
   [BubbleColor.GREEN]: {
     primary: '#00e676',
-    light: '#80ffb7',
-    dark: '#00803d',
-    glow: 'rgba(0, 230, 118, 0.5)'
+    light: '#b9f6ca',
+    dark: '#00893e',
+    glow: 'rgba(0, 230, 118, 0.4)'
   },
   [BubbleColor.YELLOW]: {
-    primary: '#ffb700',
-    light: '#ffdf80',
-    dark: '#996e00',
-    glow: 'rgba(255, 183, 0, 0.5)'
+    primary: '#ffd600',
+    light: '#fff59d',
+    dark: '#f57f17',
+    glow: 'rgba(255, 214, 0, 0.4)'
   },
   [BubbleColor.PURPLE]: {
-    primary: '#c000ff',
-    light: '#e580ff',
-    dark: '#660088',
-    glow: 'rgba(192, 0, 255, 0.5)'
+    primary: '#aa00ff',
+    light: '#ea80fc',
+    dark: '#6200ea',
+    glow: 'rgba(170, 0, 255, 0.4)'
   }
 };
 
