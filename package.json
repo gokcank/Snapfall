@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "npm run build"
+    "test": "tsx src/test_grid.ts && npm run build"
   },
   "devDependencies": {
     "tsx": "^4.23.13",
