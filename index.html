@@ -7,7 +7,7 @@
     <title>Snapfall: Bubble Shooter</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
@@ -17,19 +17,66 @@
           <span class="hud-label">Skor</span>
           <span class="hud-value" id="scoreValue">0</span>
         </div>
-        <div class="hud-title">Snapfall</div>
+        <div class="hud-center">
+          <div class="hud-title">Snapfall</div>
+          <div class="hud-high" id="highScoreText">En Yüksek: 0</div>
+        </div>
         <div class="hud-stat" style="text-align: right;">
-          <span class="hud-label">Aşama</span>
-          <span class="hud-value" id="levelValue">2</span>
+          <span class="hud-label">Seviye</span>
+          <span class="hud-value" id="levelValue">1</span>
         </div>
       </header>
 
       <main class="canvas-wrapper">
         <canvas id="gameCanvas" width="480" height="680"></canvas>
+
+        <!-- Game Over Modal -->
+        <div class="modal-overlay hidden" id="gameOverModal">
+          <div class="modal-card gameover-card">
+            <div class="modal-icon">💥</div>
+            <h2 class="modal-title">OYUN BİTTİ</h2>
+            <p class="modal-subtitle">Baloncuklar tehlike çizgisini aştı!</p>
+            
+            <div class="modal-stats">
+              <div class="stat-box">
+                <span class="stat-box-label">Toplam Skor</span>
+                <span class="stat-box-val" id="goScore">0</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-box-label">Patlatılan</span>
+                <span class="stat-box-val" id="goPopped">0</span>
+              </div>
+            </div>
+
+            <button class="btn-primary" id="btnRestart">TEKRAR DENE</button>
+          </div>
+        </div>
+
+        <!-- Victory Modal -->
+        <div class="modal-overlay hidden" id="victoryModal">
+          <div class="modal-card victory-card">
+            <div class="modal-icon">🏆</div>
+            <h2 class="modal-title">TEBRİKLER!</h2>
+            <p class="modal-subtitle">Tüm baloncukları temizlediniz!</p>
+
+            <div class="modal-stats">
+              <div class="stat-box">
+                <span class="stat-box-label">Skor</span>
+                <span class="stat-box-val" id="vicScore">0</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-box-label">Bonus</span>
+                <span class="stat-box-val">+1000</span>
+              </div>
+            </div>
+
+            <button class="btn-primary" id="btnNextLevel">SONRAKİ SEVİYE</button>
+          </div>
+        </div>
       </main>
 
       <footer class="hud-footer">
-        <span class="badge"><span class="status-dot"></span> Aşama 2: Fırlatma &amp; Fizik</span>
+        <span class="badge"><span class="status-dot"></span> Snapfall Mobile</span>
         <span id="coordInfo">Nişan almak için dokunun veya sürükleyin</span>
       </footer>
     </div>

@@ -1,9 +1,10 @@
 :root {
   --bg-dark: #090d16;
-  --panel-bg: rgba(15, 23, 42, 0.85);
+  --panel-bg: rgba(15, 23, 42, 0.9);
   --border-glow: rgba(56, 189, 248, 0.25);
   --accent-cyan: #38bdf8;
   --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
 }
 
 * {
@@ -29,27 +30,27 @@ body {
 .game-container {
   width: 100%;
   max-width: 480px;
-  height: 92vh;
-  max-height: 850px;
+  height: 94vh;
+  max-height: 870px;
   background: var(--panel-bg);
   border: 1px solid var(--border-glow);
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.1);
-  border-radius: 20px;
+  border-radius: 24px;
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
 }
 
 .hud-header {
-  height: 56px;
-  padding: 0 16px;
+  height: 60px;
+  padding: 0 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(10, 15, 29, 0.6);
+  background: rgba(10, 15, 29, 0.7);
 }
 
 .hud-stat {
@@ -66,19 +67,33 @@ body {
 }
 
 .hud-value {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   color: #f1f5f9;
   letter-spacing: 0.5px;
 }
 
+.hud-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .hud-title {
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 2px;
   background: linear-gradient(135deg, #38bdf8 0%, #c084fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+}
+
+.hud-high {
+  font-size: 9px;
+  font-weight: 600;
+  color: #fbbf24;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
@@ -105,7 +120,7 @@ canvas#gameCanvas {
   align-items: center;
   justify-content: space-between;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(10, 15, 29, 0.6);
+  background: rgba(10, 15, 29, 0.7);
   font-size: 11px;
   color: #64748b;
 }
@@ -129,4 +144,120 @@ canvas#gameCanvas {
   border-radius: 50%;
   background: #38bdf8;
   box-shadow: 0 0 8px #38bdf8;
+}
+
+/* Glassmorphic Modals */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  z-index: 50;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 340px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.15);
+  border-radius: 20px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.modal-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.gameover-card .modal-title {
+  color: #f43f5e;
+}
+
+.victory-card .modal-title {
+  color: #fbbf24;
+}
+
+.modal-subtitle {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+.modal-stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-box-label {
+  font-size: 10px;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.stat-box-val {
+  font-size: 18px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.btn-primary {
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
 }

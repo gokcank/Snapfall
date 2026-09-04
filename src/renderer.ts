@@ -160,7 +160,6 @@ export class CanvasRenderer {
       }
     }
 
-    // Ghost landing bubble indicator
     if (traj.targetCell) {
       const ghostPos = this.grid.gridToWorld(traj.targetCell.row, traj.targetCell.col);
       const ghostBubble: Bubble = {
@@ -186,7 +185,7 @@ export class CanvasRenderer {
   }
 
   // Sci-Fi Arcade Cannon Shooter
-  drawShooter(shooter: CannonShooter) {
+  drawShooter(shooter: CannonShooter, foulsLeft: number = 5, maxFouls: number = 5) {
     const ctx = this.ctx;
     const ox = shooter.origin.x;
     const oy = shooter.origin.y;
@@ -270,19 +269,41 @@ export class CanvasRenderer {
     };
     this.drawBubble(nextX, nextY, nextBubble, 0.9, 0.8);
 
+    // 5. Foul Orbs / Ceiling Drop Counter (at the right side)
+    const foulStartX = ox + 55;
+    const foulY = oy + 25;
+    ctx.font = '600 9px Outfit, sans-serif';
+    ctx.fillStyle = '#64748b';
+    ctx.textAlign = 'center';
+    ctx.fillText('TAVAN', foulStartX + 20, foulY + 16);
+
+    for (let f = 0; f < maxFouls; f++) {
+      const fx = foulStartX + f * 11;
+      ctx.beginPath();
+      ctx.arc(fx, foulY, 3.5, 0, Math.PI * 2);
+      if (f < foulsLeft) {
+        ctx.fillStyle = '#38bdf8';
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 5;
+      } else {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.shadowBlur = 0;
+      }
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
     ctx.restore();
   }
 
-  // Render Visual Effects: Particles, Falling Bubbles, Score Popups
+  // Render Visual Effects
   drawEffects(effects: EffectsManager) {
     const ctx = this.ctx;
 
-    // 1. Draw Falling Bubbles (Hanging clusters dropping)
     for (const fb of effects.activeFallingBubbles) {
       this.drawBubble(fb.x, fb.y, fb.bubble, fb.alpha, 1.0);
     }
 
-    // 2. Draw Pop Particles
     for (const p of effects.activeParticles) {
       ctx.save();
       ctx.globalAlpha = p.alpha;
@@ -295,7 +316,6 @@ export class CanvasRenderer {
       ctx.restore();
     }
 
-    // 3. Draw Floating Score Popups
     for (const sp of effects.activeScorePopups) {
       ctx.save();
       ctx.globalAlpha = sp.alpha;
@@ -309,31 +329,38 @@ export class CanvasRenderer {
     }
   }
 
-  // Ceiling line & border
-  drawBoundaries() {
+  // Boundaries & Danger Line
+  drawBoundaries(hasWarning: boolean = false) {
     const ctx = this.ctx;
     ctx.save();
 
     const ceilGrad = ctx.createLinearGradient(0, 0, this.canvas.width, 0);
-    ceilGrad.addColorStop(0, 'rgba(56, 189, 248, 0.3)');
-    ceilGrad.addColorStop(0.5, 'rgba(168, 85, 247, 0.5)');
-    ceilGrad.addColorStop(1, 'rgba(56, 189, 248, 0.3)');
+    ceilGrad.addColorStop(0, 'rgba(56, 189, 248, 0.4)');
+    ceilGrad.addColorStop(0.5, 'rgba(168, 85, 247, 0.6)');
+    ceilGrad.addColorStop(1, 'rgba(56, 189, 248, 0.4)');
     ctx.fillStyle = ceilGrad;
-    ctx.fillRect(0, 0, this.canvas.width, 3);
+    ctx.fillRect(0, 0, this.canvas.width, 4);
 
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.lineWidth = 2;
     ctx.strokeRect(1, 0, this.canvas.width - 2, this.canvas.height);
 
+    // Danger line at row 12
     const dangerY = this.grid.rowHeight * 12 + this.grid.radius;
-    ctx.strokeStyle = 'rgba(239, 68, 68, 0.2)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = hasWarning ? 'rgba(239, 68, 68, 0.8)' : 'rgba(239, 68, 68, 0.25)';
+    ctx.lineWidth = hasWarning ? 2 : 1;
+    ctx.setLineDash([6, 4]);
     ctx.beginPath();
     ctx.moveTo(0, dangerY);
     ctx.lineTo(this.canvas.width, dangerY);
     ctx.stroke();
     ctx.setLineDash([]);
+
+    if (hasWarning) {
+      ctx.font = '700 10px Outfit, sans-serif';
+      ctx.fillStyle = '#ef4444';
+      ctx.fillText('TEHLİKE ÇİZGİSİ', this.canvas.width / 2 - 40, dangerY - 6);
+    }
 
     ctx.restore();
   }

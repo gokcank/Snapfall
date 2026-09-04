@@ -8,7 +8,7 @@ export class HexGrid {
   readonly rowHeight: number;
   readonly width: number;
 
-  constructor(radius: number = 24, colsEven: number = 10, maxRows: number = 18) {
+  constructor(radius: number = 24, colsEven: number = 10, maxRows: number = 16) {
     this.radius = radius;
     this.colsEven = colsEven;
     this.colsOdd = colsEven - 1;
@@ -82,6 +82,61 @@ export class HexGrid {
       matrix.push(new Array<Bubble | null>(cols).fill(null));
     }
     return matrix;
+  }
+
+  isGridEmpty(matrix: GridMatrix): boolean {
+    for (let r = 0; r < this.maxRows; r++) {
+      const cols = this.getColsInRow(r);
+      for (let c = 0; c < cols; c++) {
+        if (matrix[r][c] !== null) return false;
+      }
+    }
+    return true;
+  }
+
+  hasReachedDangerLine(matrix: GridMatrix, dangerRow: number = 12): boolean {
+    for (let r = dangerRow; r < this.maxRows; r++) {
+      const cols = this.getColsInRow(r);
+      for (let c = 0; c < cols; c++) {
+        if (matrix[r][c] !== null) return true;
+      }
+    }
+    return false;
+  }
+
+  shiftDown(matrix: GridMatrix, newRowBubbles: (Bubble | null)[]): boolean {
+    // Shift rows downwards
+    for (let r = this.maxRows - 1; r > 0; r--) {
+      const targetCols = this.getColsInRow(r);
+      const sourceCols = this.getColsInRow(r - 1);
+      const limit = Math.min(targetCols, sourceCols);
+
+      for (let c = 0; c < limit; c++) {
+        const bubble = matrix[r - 1][c];
+        if (bubble) {
+          bubble.row = r;
+          bubble.col = c;
+          matrix[r][c] = bubble;
+        } else {
+          matrix[r][c] = null;
+        }
+      }
+      for (let c = limit; c < targetCols; c++) {
+        matrix[r][c] = null;
+      }
+    }
+
+    // Insert new row at row 0 (Row 0 is always colsEven length)
+    for (let c = 0; c < this.colsEven; c++) {
+      const bubble = newRowBubbles[c] || null;
+      if (bubble) {
+        bubble.row = 0;
+        bubble.col = c;
+      }
+      matrix[0][c] = bubble;
+    }
+
+    return this.hasReachedDangerLine(matrix, 12);
   }
 
   findClosestEmptyCell(

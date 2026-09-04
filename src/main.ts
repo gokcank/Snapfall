@@ -6,7 +6,7 @@ import { PhysicsEngine } from './physics';
 import { CanvasRenderer } from './renderer';
 import { CannonShooter } from './shooter';
 import { TrajectoryCalculator } from './trajectory';
-import { Bubble, BubbleColor, GridMatrix } from './types';
+import { Bubble, BubbleColor, GameState, GridMatrix } from './types';
 
 class BubbleShooterGame {
   private canvas: HTMLCanvasElement;
@@ -19,18 +19,42 @@ class BubbleShooterGame {
   private audio: SoundEffects;
   private matrix: GridMatrix;
 
+  private state: GameState = 'playing';
   private score: number = 0;
+  private highScore: number = 0;
+  private level: number = 1;
   private combo: number = 0;
+  private foulsLeft: number = 5;
+  private maxFouls: number = 5;
+  private totalPopped: number = 0;
+
+  // DOM Elements
   private scoreEl: HTMLElement | null;
+  private highScoreEl: HTMLElement | null;
+  private levelEl: HTMLElement | null;
   private coordInfoEl: HTMLElement | null;
+  private gameOverModal: HTMLElement | null;
+  private victoryModal: HTMLElement | null;
+  private goScoreEl: HTMLElement | null;
+  private goPoppedEl: HTMLElement | null;
+  private vicScoreEl: HTMLElement | null;
 
   private lastTime: number = 0;
   private isTouching: boolean = false;
+  private bubbleIdCounter: number = 1;
 
   constructor() {
     this.canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
     this.scoreEl = document.getElementById('scoreValue');
+    this.highScoreEl = document.getElementById('highScoreText');
+    this.levelEl = document.getElementById('levelValue');
     this.coordInfoEl = document.getElementById('coordInfo');
+
+    this.gameOverModal = document.getElementById('gameOverModal');
+    this.victoryModal = document.getElementById('victoryModal');
+    this.goScoreEl = document.getElementById('goScore');
+    this.goPoppedEl = document.getElementById('goPopped');
+    this.vicScoreEl = document.getElementById('vicScore');
 
     this.grid = new HexGrid(24, 10, 16);
     this.renderer = new CanvasRenderer(this.canvas, this.grid);
@@ -42,14 +66,44 @@ class BubbleShooterGame {
 
     this.shooter = new CannonShooter({ x: this.canvas.width / 2, y: 615 });
 
-    this.initSampleLevel();
+    this.loadHighScore();
+    this.initLevel(this.level);
     this.setupInputs();
+    this.setupModalButtons();
 
     this.lastTime = performance.now();
     requestAnimationFrame(this.gameLoop);
   }
 
-  private initSampleLevel() {
+  private loadHighScore() {
+    const saved = localStorage.getItem('snapfall_highscore');
+    if (saved) {
+      this.highScore = parseInt(saved, 10) || 0;
+      if (this.highScoreEl) {
+        this.highScoreEl.textContent = `En Yüksek: ${this.highScore}`;
+      }
+    }
+  }
+
+  private updateHighScore() {
+    if (this.score > this.highScore) {
+      this.highScore = this.score;
+      localStorage.setItem('snapfall_highscore', this.highScore.toString());
+      if (this.highScoreEl) {
+        this.highScoreEl.textContent = `En Yüksek: ${this.highScore}`;
+      }
+    }
+  }
+
+  private initLevel(lvl: number) {
+    this.matrix = this.grid.createEmptyMatrix();
+    this.foulsLeft = this.maxFouls;
+    this.state = 'playing';
+
+    if (this.levelEl) {
+      this.levelEl.textContent = lvl.toString();
+    }
+
     const colors = [
       BubbleColor.RED,
       BubbleColor.BLUE,
@@ -58,20 +112,24 @@ class BubbleShooterGame {
       BubbleColor.PURPLE
     ];
 
-    let id = 1;
-    for (let r = 0; r < 5; r++) {
+    // Number of initial rows scales slightly with level (min 4, max 6)
+    const initialRows = Math.min(6, 3 + lvl);
+    for (let r = 0; r < initialRows; r++) {
       const cols = this.grid.getColsInRow(r);
       for (let c = 0; c < cols; c++) {
-        const color = colors[(r * 2 + c + Math.floor(c / 2)) % colors.length];
-        const bubble: Bubble = {
-          id: `bubble-${id++}`,
+        const color = colors[(r * 3 + c + Math.floor(c / 2)) % colors.length];
+        this.matrix[r][c] = {
+          id: `b-${this.bubbleIdCounter++}`,
           color,
           row: r,
           col: c,
           state: 'idle'
         };
-        this.matrix[r][c] = bubble;
       }
+    }
+
+    if (this.coordInfoEl) {
+      this.coordInfoEl.textContent = `Seviye ${lvl} Başladı!`;
     }
   }
 
@@ -87,7 +145,7 @@ class BubbleShooterGame {
 
   private setupInputs() {
     this.canvas.addEventListener('mousemove', (e) => {
-      if (this.physics.currentProjectile !== null) return;
+      if (this.state !== 'playing' || this.physics.currentProjectile !== null) return;
       const pos = this.getCanvasPos(e.clientX, e.clientY);
       this.shooter.setAimTarget(pos.x, pos.y);
     });
@@ -99,7 +157,7 @@ class BubbleShooterGame {
     });
 
     this.canvas.addEventListener('click', (e) => {
-      if (this.physics.currentProjectile !== null) return;
+      if (this.state !== 'playing' || this.physics.currentProjectile !== null) return;
       const pos = this.getCanvasPos(e.clientX, e.clientY);
 
       const nextDockX = this.shooter.origin.x - 80;
@@ -113,7 +171,7 @@ class BubbleShooterGame {
     });
 
     this.canvas.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 0 || this.physics.currentProjectile !== null) return;
+      if (this.state !== 'playing' || e.touches.length === 0 || this.physics.currentProjectile !== null) return;
       this.isTouching = true;
       const pos = this.getCanvasPos(e.touches[0].clientX, e.touches[0].clientY);
 
@@ -135,17 +193,33 @@ class BubbleShooterGame {
     }, { passive: true });
 
     this.canvas.addEventListener('touchend', () => {
-      if (this.isTouching && this.physics.currentProjectile === null) {
+      if (this.isTouching && this.state === 'playing' && this.physics.currentProjectile === null) {
         this.isTouching = false;
         this.fireBubble();
       }
     });
 
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
+      if (this.state === 'playing' && e.code === 'Space') {
         this.shooter.swapColors();
       }
     });
+  }
+
+  private setupModalButtons() {
+    const btnRestart = document.getElementById('btnRestart');
+    if (btnRestart) {
+      btnRestart.addEventListener('click', () => {
+        this.restartGame();
+      });
+    }
+
+    const btnNextLevel = document.getElementById('btnNextLevel');
+    if (btnNextLevel) {
+      btnNextLevel.addEventListener('click', () => {
+        this.advanceNextLevel();
+      });
+    }
   }
 
   private fireBubble() {
@@ -171,10 +245,10 @@ class BubbleShooterGame {
       const comboMultiplier = Math.min(this.combo, 5);
       const points = matches.length * 30 * comboMultiplier;
       this.score += points;
+      this.totalPopped += matches.length;
 
       this.audio.playPop(this.combo);
 
-      // Pop matched bubbles with particle burst
       let avgX = 0;
       let avgY = 0;
       for (const m of matches) {
@@ -199,6 +273,7 @@ class BubbleShooterGame {
       if (floating.length > 0) {
         const dropPoints = floating.length * 100 * comboMultiplier;
         this.score += dropPoints;
+        this.totalPopped += floating.length;
 
         this.audio.playDrop();
         this.effects.addFallingBubbles(floating, (r, c) => this.grid.gridToWorld(r, c));
@@ -206,25 +281,114 @@ class BubbleShooterGame {
         this.effects.addScorePopup(`+${dropPoints} DÜŞÜŞ BONUSU!`, avgX, avgY + 30, '#f59e0b');
 
         if (this.coordInfoEl) {
-          this.coordInfoEl.textContent = `${matches.length} Patladı! ${floating.length} Balon Düştü!`;
+          this.coordInfoEl.textContent = `${matches.length} Patlatıldı! ${floating.length} Düştü!`;
         }
       } else {
         if (this.coordInfoEl) {
           this.coordInfoEl.textContent = `${matches.length} Baloncuk Patlatıldı!`;
         }
       }
+
+      // Check Victory (grid completely cleared)
+      if (this.grid.isGridEmpty(this.matrix)) {
+        this.triggerVictory();
+        return;
+      }
     } else {
-      // No match reset combo
+      // Missed shot: decrement foul counter
       this.combo = 0;
       this.score += 10;
-      if (this.coordInfoEl) {
-        this.coordInfoEl.textContent = `Kenetlendi: (${snappedCell.row}, ${snappedCell.col})`;
+      this.foulsLeft--;
+
+      if (this.foulsLeft <= 0) {
+        this.triggerCeilingDescent();
+      } else {
+        if (this.coordInfoEl) {
+          this.coordInfoEl.textContent = `Kilitlendi: (${snappedCell.row}, ${snappedCell.col}) | Tavan: ${this.foulsLeft}`;
+        }
       }
     }
 
+    this.updateHighScore();
     if (this.scoreEl) {
       this.scoreEl.textContent = this.score.toString();
     }
+
+    // Check Game Over threshold
+    if (this.grid.hasReachedDangerLine(this.matrix, 12)) {
+      this.triggerGameOver();
+    }
+  }
+
+  private triggerCeilingDescent() {
+    this.foulsLeft = this.maxFouls;
+    this.audio.playWarning();
+
+    const colors = [
+      BubbleColor.RED,
+      BubbleColor.BLUE,
+      BubbleColor.GREEN,
+      BubbleColor.YELLOW,
+      BubbleColor.PURPLE
+    ];
+
+    const newRowBubbles: (Bubble | null)[] = [];
+    for (let c = 0; c < this.grid.colsEven; c++) {
+      const col = colors[Math.floor(Math.random() * colors.length)];
+      newRowBubbles.push({
+        id: `drop-${this.bubbleIdCounter++}`,
+        color: col,
+        row: 0,
+        col: c,
+        state: 'idle'
+      });
+    }
+
+    const hitDanger = this.grid.shiftDown(this.matrix, newRowBubbles);
+
+    if (this.coordInfoEl) {
+      this.coordInfoEl.textContent = '⚠️ DİKKAT! Tavan bir kademe alçaldı!';
+    }
+
+    if (hitDanger || this.grid.hasReachedDangerLine(this.matrix, 12)) {
+      this.triggerGameOver();
+    }
+  }
+
+  private triggerGameOver() {
+    this.state = 'gameover';
+    this.audio.playGameOver();
+
+    if (this.goScoreEl) this.goScoreEl.textContent = this.score.toString();
+    if (this.goPoppedEl) this.goPoppedEl.textContent = this.totalPopped.toString();
+    if (this.gameOverModal) this.gameOverModal.classList.remove('hidden');
+  }
+
+  private triggerVictory() {
+    this.state = 'victory';
+    this.audio.playVictory();
+
+    this.score += 1000;
+    this.updateHighScore();
+
+    if (this.vicScoreEl) this.vicScoreEl.textContent = this.score.toString();
+    if (this.victoryModal) this.victoryModal.classList.remove('hidden');
+  }
+
+  private restartGame() {
+    if (this.gameOverModal) this.gameOverModal.classList.add('hidden');
+    this.score = 0;
+    this.totalPopped = 0;
+    this.level = 1;
+    this.combo = 0;
+    if (this.scoreEl) this.scoreEl.textContent = '0';
+    this.initLevel(this.level);
+  }
+
+  private advanceNextLevel() {
+    if (this.victoryModal) this.victoryModal.classList.add('hidden');
+    this.level++;
+    this.initLevel(this.level);
   }
 
   private gameLoop = (timestamp: number) => {
@@ -254,11 +418,13 @@ class BubbleShooterGame {
 
   private render() {
     this.renderer.clear();
-    this.renderer.drawBoundaries();
+
+    const dangerActive = this.grid.hasReachedDangerLine(this.matrix, 10);
+    this.renderer.drawBoundaries(dangerActive);
     this.renderer.drawGrid(this.matrix);
 
-    // Trajectory Line while aiming
-    if (this.physics.currentProjectile === null && (this.shooter.aiming || this.isTouching)) {
+    // Trajectory Line
+    if (this.state === 'playing' && this.physics.currentProjectile === null && (this.shooter.aiming || this.isTouching)) {
       const traj = this.trajectory.calculate(
         this.shooter.origin,
         this.shooter.angle,
@@ -268,13 +434,13 @@ class BubbleShooterGame {
       this.renderer.drawTrajectory(traj, this.shooter.currentBubbleColor);
     }
 
-    // Visual Effects (Falling Bubbles, Particles, Score Popups)
+    // Visual Effects
     this.renderer.drawEffects(this.effects);
 
-    // Shooter Cannon
-    this.renderer.drawShooter(this.shooter);
+    // Shooter Cannon & Foul Indicators
+    this.renderer.drawShooter(this.shooter, this.foulsLeft, this.maxFouls);
 
-    // Flying Projectile
+    // Projectile in flight
     if (this.physics.currentProjectile !== null) {
       this.renderer.drawProjectile(this.physics.currentProjectile);
     }

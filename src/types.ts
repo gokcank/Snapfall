@@ -40,7 +40,7 @@ export const COLOR_PALETTE: Record<BubbleColor, ColorVisual> = {
     primary: '#10b981',
     light: '#6ee7b7',
     dark: '#065f46',
-    glow: 'rgba(168, 185, 129, 0.4)'
+    glow: 'rgba(16, 185, 129, 0.4)'
   },
   [BubbleColor.YELLOW]: {
     primary: '#f59e0b',
@@ -121,4 +121,15 @@ export interface ScorePopup {
   alpha: number;
   life: number;
   color: string;
+}
+
+export type GameState = 'playing' | 'gameover' | 'victory';
+
+export interface GameStats {
+  score: number;
+  highScore: number;
+  level: number;
+  foulsLeft: number;
+  maxFouls: number;
+  bubblesPopped: number;
 }
