@@ -20,7 +20,7 @@ export class CanvasRenderer {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  // Stitch 3D Crystal Gem Bubble Drawing
+  // 90s Retro Arcade Bubble Drawing (Puzzle Bobble / Bust-a-Move aesthetic)
   drawBubble(x: number, y: number, bubble: Bubble, alpha: number = 1.0, scale: number = 1.0) {
     const r = this.grid.radius * scale;
     const visual = COLOR_PALETTE[bubble.color];
@@ -29,78 +29,68 @@ export class CanvasRenderer {
     ctx.save();
     ctx.globalAlpha = alpha;
 
-    // 1. Emissive Outer Neon Glow Aura
+    // 1. Crisp Outer Contour Base (Sharp separation on dark arcade backgrounds)
     ctx.beginPath();
-    ctx.arc(x, y, r * 1.22, 0, Math.PI * 2);
-    ctx.fillStyle = visual.glow;
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = visual.dark;
     ctx.fill();
 
-    // 2. Crystal Gem Body Gradient (Deep 3D Shading)
+    // 2. Rich 3D Spherical Radial Body Gradient
     const bodyGrad = ctx.createRadialGradient(
-      x - r * 0.32,
-      y - r * 0.32,
+      x - r * 0.28,
+      y - r * 0.28,
       r * 0.08,
       x,
       y,
-      r
+      r * 0.98
     );
     bodyGrad.addColorStop(0, visual.light);
-    bodyGrad.addColorStop(0.48, visual.primary);
+    bodyGrad.addColorStop(0.36, visual.primary);
     bodyGrad.addColorStop(0.85, visual.dark);
-    bodyGrad.addColorStop(1, '#05050a');
+    bodyGrad.addColorStop(1.0, "rgba(15, 12, 28, 0.55)");
 
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.arc(x, y, r * 0.96, 0, Math.PI * 2);
     ctx.fillStyle = bodyGrad;
     ctx.fill();
 
-    // 3. Inner Refraction Facet Glow (Crystal Depth)
-    const facetGrad = ctx.createRadialGradient(
-      x,
-      y + r * 0.2,
-      r * 0.05,
-      x,
-      y,
-      r * 0.8
-    );
-    facetGrad.addColorStop(0, 'rgba(255, 255, 255, 0.35)');
-    facetGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.08)');
-    facetGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-
-    ctx.beginPath();
-    ctx.arc(x, y, r * 0.85, 0, Math.PI * 2);
-    ctx.fillStyle = facetGrad;
-    ctx.fill();
-
-    // 4. Crisp Inner Bevel Rim
-    ctx.lineWidth = 1.4;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    // 3. Crisp Cartoon Arcade Border Stroke
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = "rgba(10, 8, 20, 0.5)";
     ctx.stroke();
 
-    // 5. Primary Specular Crescent Highlight
+    // 4. Primary Specular Glint (Signature 90s Curved Highlight)
     ctx.beginPath();
     ctx.ellipse(
-      x - r * 0.35,
-      y - r * 0.36,
-      r * 0.36,
+      x - r * 0.32,
+      y - r * 0.34,
+      r * 0.35,
       r * 0.18,
       -Math.PI / 4,
       0,
       Math.PI * 2
     );
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+    ctx.fillStyle = "rgba(255, 255, 255, 0.88)";
     ctx.fill();
 
-    // 6. Secondary Specular Twinkle Dot
+    // 5. Secondary Specular Dot
     ctx.beginPath();
-    ctx.arc(x - r * 0.12, y - r * 0.46, r * 0.09, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.arc(x - r * 0.1, y - r * 0.48, r * 0.08, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
     ctx.fill();
 
-    // 7. Bottom-Right Ambient Bounce Reflection
+    // 6. Bottom-Right Ambient Rim Reflection
     ctx.beginPath();
-    ctx.arc(x + r * 0.24, y + r * 0.36, r * 0.28, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+    ctx.ellipse(
+      x + r * 0.26,
+      y + r * 0.3,
+      r * 0.28,
+      r * 0.12,
+      -Math.PI / 4,
+      0,
+      Math.PI * 2
+    );
+    ctx.fillStyle = "rgba(255, 255, 255, 0.22)";
     ctx.fill();
 
     ctx.restore();
@@ -124,9 +114,9 @@ export class CanvasRenderer {
       const ty = p.y - (p.vy / speed) * trailLength;
 
       const grad = ctx.createLinearGradient(tx, ty, p.x, p.y);
-      grad.addColorStop(0, 'rgba(0, 242, 255, 0)');
-      grad.addColorStop(0.6, COLOR_PALETTE[p.color].glow);
-      grad.addColorStop(1, '#ffffff');
+      grad.addColorStop(0, "rgba(255, 255, 255, 0)");
+      grad.addColorStop(0.65, COLOR_PALETTE[p.color].light);
+      grad.addColorStop(1, "#ffffff");
 
       ctx.beginPath();
       ctx.moveTo(tx, ty);
@@ -389,7 +379,7 @@ export class CanvasRenderer {
     for (const sp of effects.activeScorePopups) {
       ctx.save();
       ctx.globalAlpha = sp.alpha;
-      ctx.font = '800 17px "Sora", sans-serif';
+      ctx.font = '700 18px "Fredoka", sans-serif';
       ctx.fillStyle = sp.color;
       ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
       ctx.shadowBlur = 6;
@@ -399,26 +389,29 @@ export class CanvasRenderer {
     }
   }
 
-  // Boundaries, Neon Descending Ceiling Press & Danger Line
+  // Boundaries, Retro Industrial Ceiling Press & Danger Line
   drawBoundaries(hasWarning: boolean = false) {
     const ctx = this.ctx;
     ctx.save();
 
     const cY = this.grid.ceilingY;
 
-    // 1. Descending ceiling press slab
+    // 1. Descending mechanical ceiling press slab
     if (cY > 0) {
-      ctx.fillStyle = 'rgba(10, 10, 26, 0.96)';
+      const slabGrad = ctx.createLinearGradient(0, 0, 0, cY);
+      slabGrad.addColorStop(0, "#120f24");
+      slabGrad.addColorStop(1, "#231d3d");
+      ctx.fillStyle = slabGrad;
       ctx.fillRect(0, 0, this.canvas.width, cY);
 
-      // Stitch Neon Hazard Stripes along ceiling press
+      // Retro Arcade Amber Hazard Stripes
       ctx.save();
       ctx.beginPath();
       ctx.rect(0, 0, this.canvas.width, cY);
       ctx.clip();
-      ctx.lineWidth = 12;
-      ctx.strokeStyle = 'rgba(188, 0, 255, 0.18)';
-      for (let x = -cY; x < this.canvas.width + cY; x += 24) {
+      ctx.lineWidth = 14;
+      ctx.strokeStyle = "rgba(255, 180, 0, 0.22)";
+      for (let x = -cY; x < this.canvas.width + cY; x += 28) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x + cY, cY);
@@ -427,35 +420,28 @@ export class CanvasRenderer {
       ctx.restore();
     }
 
-    // 2. Ceiling rim beam (Neon Cyan / Violet Gradient)
+    // 2. Ceiling girder lip (Sturdy Brass/Steel Edge)
     const ceilGrad = ctx.createLinearGradient(0, 0, this.canvas.width, 0);
-    ceilGrad.addColorStop(0, '#00f2ff');
-    ceilGrad.addColorStop(0.5, '#ce5dff');
-    ceilGrad.addColorStop(1, '#00f2ff');
+    ceilGrad.addColorStop(0, "#ffd600");
+    ceilGrad.addColorStop(0.5, "#ff9100");
+    ceilGrad.addColorStop(1, "#ffd600");
     ctx.fillStyle = ceilGrad;
-    ctx.shadowColor = '#00f2ff';
-    ctx.shadowBlur = 10;
     ctx.fillRect(0, cY, this.canvas.width, 4);
-    ctx.shadowBlur = 0;
 
-    // Ceiling bottom ambient glow
-    ctx.fillStyle = 'rgba(0, 242, 255, 0.3)';
-    ctx.fillRect(0, cY + 4, this.canvas.width, 2);
+    // Girder steel trim
+    ctx.fillStyle = "#453d70";
+    ctx.fillRect(0, cY + 4, this.canvas.width, 3);
 
-    // 3. Side arena walls
-    ctx.strokeStyle = 'rgba(0, 242, 255, 0.12)';
+    // 3. Side arcade cabinet walls
+    ctx.strokeStyle = "#2d2650";
     ctx.lineWidth = 2;
     ctx.strokeRect(1, cY, this.canvas.width - 2, this.canvas.height - cY);
 
     // 4. Danger line at bottom (fixed world coordinate y = 520)
     const dangerY = 520;
-    ctx.strokeStyle = hasWarning ? '#ff0055' : 'rgba(255, 0, 85, 0.3)';
-    ctx.lineWidth = hasWarning ? 2.5 : 1.2;
-    ctx.setLineDash([7, 4]);
-    if (hasWarning) {
-      ctx.shadowColor = '#ff0055';
-      ctx.shadowBlur = 10;
-    }
+    ctx.strokeStyle = hasWarning ? "#ff3355" : "rgba(255, 51, 85, 0.35)";
+    ctx.lineWidth = hasWarning ? 2.5 : 1.5;
+    ctx.setLineDash([8, 4]);
     ctx.beginPath();
     ctx.moveTo(0, dangerY);
     ctx.lineTo(this.canvas.width, dangerY);
