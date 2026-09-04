@@ -25,34 +25,34 @@ export interface ColorVisual {
 
 export const COLOR_PALETTE: Record<BubbleColor, ColorVisual> = {
   [BubbleColor.RED]: {
-    primary: '#ef4444',
-    light: '#fca5a5',
-    dark: '#991b1b',
-    glow: 'rgba(239, 68, 68, 0.4)'
+    primary: '#ff0055',
+    light: '#ff7aa8',
+    dark: '#8a0029',
+    glow: 'rgba(255, 0, 85, 0.5)'
   },
   [BubbleColor.BLUE]: {
-    primary: '#3b82f6',
-    light: '#93c5fd',
-    dark: '#1e40af',
-    glow: 'rgba(59, 130, 246, 0.4)'
+    primary: '#0077ff',
+    light: '#80bfff',
+    dark: '#003d8a',
+    glow: 'rgba(0, 119, 255, 0.5)'
   },
   [BubbleColor.GREEN]: {
-    primary: '#10b981',
-    light: '#6ee7b7',
-    dark: '#065f46',
-    glow: 'rgba(16, 185, 129, 0.4)'
+    primary: '#00e676',
+    light: '#80ffb7',
+    dark: '#00803d',
+    glow: 'rgba(0, 230, 118, 0.5)'
   },
   [BubbleColor.YELLOW]: {
-    primary: '#f59e0b',
-    light: '#fde68a',
-    dark: '#b45309',
-    glow: 'rgba(245, 158, 11, 0.4)'
+    primary: '#ffb700',
+    light: '#ffdf80',
+    dark: '#996e00',
+    glow: 'rgba(255, 183, 0, 0.5)'
   },
   [BubbleColor.PURPLE]: {
-    primary: '#a855f7',
-    light: '#d8b4fe',
-    dark: '#6b21a8',
-    glow: 'rgba(168, 85, 247, 0.4)'
+    primary: '#c000ff',
+    light: '#e580ff',
+    dark: '#660088',
+    glow: 'rgba(192, 0, 255, 0.5)'
   }
 };
 
@@ -124,6 +124,7 @@ export interface ScorePopup {
 }
 
 export type GameState = 'menu' | 'playing' | 'paused' | 'gameover' | 'victory';
+export type GameMode = 'classic' | 'survival';
 
 export interface GameStats {
   score: number;
@@ -132,6 +133,5 @@ export interface GameStats {
   foulsLeft: number;
   maxFouls: number;
   bubblesPopped: number;
+  mode: GameMode;
 }
-
-export type GameMode = 'classic' | 'survival';
