@@ -158,7 +158,22 @@ body {
   box-shadow: 0 1px 0 #100d20;
 }
 
-/* Canvas Area */
+/* Arcade Cabinet Speaker Vents in HUD Header */
+.arcade-speaker-grille {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.arcade-speaker-grille span {
+  width: 3px;
+  height: 18px;
+  background: #151128;
+  border: 1px solid #362e58;
+  border-radius: 2px;
+}
+
+/* Canvas Area with CRT Bezel Screws */
 .canvas-wrapper {
   flex: 1;
   width: 100%;
@@ -169,6 +184,23 @@ body {
   background: radial-gradient(circle at center, #1b1735 0%, #0d0b17 100%);
 }
 
+.bezel-screw {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #8c82b0 0%, #362e58 70%, #151128 100%);
+  border: 1px solid #100d20;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.6);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.bezel-screw.top-left { top: 6px; left: 6px; }
+.bezel-screw.top-right { top: 6px; right: 6px; }
+.bezel-screw.bottom-left { bottom: 6px; left: 6px; }
+.bezel-screw.bottom-right { bottom: 6px; right: 6px; }
+
 canvas#gameCanvas {
   width: 100%;
   height: 100%;
@@ -176,41 +208,185 @@ canvas#gameCanvas {
   touch-action: none;
 }
 
-/* Footer Telemetry */
-.hud-footer {
-  height: 48px;
-  padding: 0 16px;
+/* Compact Neo-Geo Arcade Control Panel Strip (CPO) */
+.arcade-cpo-panel {
+  height: 60px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 2px solid #2e2752;
-  background: rgba(22, 19, 41, 0.92);
+  border-top: 3px solid #362e58;
+  background: linear-gradient(180deg, #241d3d 0%, #151126 100%);
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* 2D Retro Joystick (Left) */
+.cpo-joystick-wrap {
+  width: 42px;
+  height: 42px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.cpo-joystick-washer {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #110e1c;
+  border: 2px solid #362e55;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.cpo-joystick-shaft {
+  position: absolute;
+  width: 5px;
+  height: 12px;
+  background: linear-gradient(90deg, #999 0%, #eee 50%, #777 100%);
+  border-radius: 2px;
+  bottom: 15px;
+}
+
+.cpo-joystick-ball {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff6b8b 0%, #ff1744 50%, #990022 100%);
+  border: 1.5px solid #660017;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.7);
+  top: 4px;
+  transition: transform 0.1s ease;
+}
+
+.cpo-joystick-wrap:active .cpo-joystick-ball {
+  transform: translate(2px, 2px);
+}
+
+/* Center Coin Door & Marquee */
+.cpo-center-deck {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 8px;
+  overflow: hidden;
+}
+
+.cpo-coin-slot-plate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0e0b17;
+  border: 1.5px solid #ffd600;
+  border-radius: 8px;
+  padding: 2px 8px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.cpo-credit-led {
   font-family: 'Fredoka', 'Outfit', sans-serif;
   font-size: 11px;
-  color: var(--text-dim);
-  z-index: 10;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 214, 0, 0.1);
-  color: #ffd600;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  border: 1.5px solid rgba(255, 214, 0, 0.35);
   font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.5px;
+  color: #ff3355;
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px rgba(255, 51, 85, 0.8);
 }
 
-.status-dot {
-  width: 7px;
-  height: 7px;
+.cpo-coin-door {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: #ffd600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.cpo-coin-slit {
+  width: 2px;
+  height: 10px;
+  background: #ffd600;
+  border-radius: 1px;
+  display: inline-block;
+  box-shadow: 0 0 4px #ffd600;
+}
+
+.cpo-marquee-text {
+  font-family: 'Fredoka', 'Outfit', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #a5a1c0;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 190px;
+  text-align: center;
+}
+
+/* 4 Curved Neo-Geo Arcade Push Buttons (Right) */
+.cpo-buttons-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.cpo-arcade-btn {
+  width: 25px;
+  height: 25px;
   border-radius: 50%;
-  background: #00e676;
-  box-shadow: 0 0 6px #00e676;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  font-family: 'Fredoka', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.8), 0 3px 6px rgba(0, 0, 0, 0.6);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cpo-arcade-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.cpo-arcade-btn.btn-a {
+  background: radial-gradient(circle at 35% 30%, #ff6685 0%, #ff3355 60%, #990022 100%);
+  color: #ffffff;
+  border-color: #ff99b0;
+}
+
+.cpo-arcade-btn.btn-b {
+  background: radial-gradient(circle at 35% 30%, #fff176 0%, #ffd600 60%, #b38600 100%);
+  color: #332000;
+  border-color: #fff9c4;
+}
+
+.cpo-arcade-btn.btn-c {
+  background: radial-gradient(circle at 35% 30%, #69f0ae 0%, #00e676 60%, #006633 100%);
+  color: #002914;
+  border-color: #b9f6ca;
+}
+
+.cpo-arcade-btn.btn-d {
+  background: radial-gradient(circle at 35% 30%, #82b1ff 0%, #2979ff 60%, #003db3 100%);
+  color: #ffffff;
+  border-color: #bbdefb;
 }
 
 /* Modals & Overlays */

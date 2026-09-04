@@ -13,6 +13,9 @@
   <body>
     <div class="game-container">
       <header class="hud-header">
+        <div class="arcade-speaker-grille">
+          <span></span><span></span><span></span>
+        </div>
         <div class="hud-stat">
           <span class="hud-label">Skor</span>
           <span class="hud-value" id="scoreValue">0</span>
@@ -29,9 +32,16 @@
           <button class="hud-icon-btn" id="btnHudSound" title="Sesi Aç/Kapat">🔊</button>
           <button class="hud-icon-btn" id="btnHudPause" title="Duraklat">⏸️</button>
         </div>
+        <div class="arcade-speaker-grille">
+          <span></span><span></span><span></span>
+        </div>
       </header>
 
       <main class="canvas-wrapper">
+        <span class="bezel-screw top-left"></span>
+        <span class="bezel-screw top-right"></span>
+        <span class="bezel-screw bottom-left"></span>
+        <span class="bezel-screw bottom-right"></span>
         <canvas id="gameCanvas" width="480" height="680"></canvas>
 
         <!-- Main Menu Modal -->
@@ -152,9 +162,28 @@
         </div>
       </main>
 
-      <footer class="hud-footer">
-        <span class="badge"><span class="status-dot"></span> Snapfall Mobile</span>
-        <span id="coordInfo">Nişan almak için dokunun veya sürükleyin</span>
+      <!-- Compact Neo-Geo Arcade Control Panel Strip -->
+      <footer class="arcade-cpo-panel">
+        <div class="cpo-joystick-wrap" title="Arcade Joystick">
+          <div class="cpo-joystick-washer"></div>
+          <div class="cpo-joystick-shaft"></div>
+          <div class="cpo-joystick-ball"></div>
+        </div>
+
+        <div class="cpo-center-deck">
+          <div class="cpo-coin-slot-plate">
+            <span class="cpo-credit-led">CREDIT 01</span>
+            <span class="cpo-coin-door"><span class="cpo-coin-slit"></span>25¢ INSERT COIN</span>
+          </div>
+          <div id="coordInfo" class="cpo-marquee-text">Nişan almak için dokunun veya sürükleyin</div>
+        </div>
+
+        <div class="cpo-buttons-wrap">
+          <button type="button" class="cpo-arcade-btn btn-a" title="A">A</button>
+          <button type="button" class="cpo-arcade-btn btn-b" title="B">B</button>
+          <button type="button" class="cpo-arcade-btn btn-c" title="C">C</button>
+          <button type="button" class="cpo-arcade-btn btn-d" title="D">D</button>
+        </div>
       </footer>
     </div>
     <script type="module" src="/src/main.ts"></script>
