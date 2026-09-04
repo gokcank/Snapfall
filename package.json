@@ -10,8 +10,13 @@
     "test": "tsx src/test_grid.ts && tsx src/test_physics.ts && tsx src/test_algorithms.ts && tsx src/test_gameover.ts && npm run build"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.1",
     "tsx": "^4.23.13",
     "typescript": "^5.7.3",
     "vite": "^6.2.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/core": "^8.5.1"
   }
 }

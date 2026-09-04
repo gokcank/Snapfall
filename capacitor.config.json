@@ -1,0 +1,8 @@
+{
+  "appId": "com.gokcank.snapfall",
+  "appName": "Snapfall",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

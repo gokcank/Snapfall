@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Snapfall</string>
+    <string name="title_activity_main">Snapfall</string>
+    <string name="package_name">com.gokcank.snapfall</string>
+    <string name="custom_url_scheme">com.gokcank.snapfall</string>
+</resources>
