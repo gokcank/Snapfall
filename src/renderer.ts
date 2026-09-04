@@ -1,3 +1,4 @@
+import { EffectsManager } from './effects';
 import { HexGrid } from './grid';
 import { CannonShooter } from './shooter';
 import { Bubble, COLOR_PALETTE, GridMatrix, Projectile, TrajectoryResult } from './types';
@@ -89,7 +90,6 @@ export class CanvasRenderer {
       col: -1
     };
 
-    // Projectile speed streak / subtle trail
     const ctx = this.ctx;
     ctx.save();
     const speed = Math.hypot(p.vx, p.vy);
@@ -134,7 +134,6 @@ export class CanvasRenderer {
     const ctx = this.ctx;
     ctx.save();
 
-    // Dotted trajectory segments with pulse
     const visual = COLOR_PALETTE[currentColor];
     ctx.strokeStyle = visual.primary;
     ctx.fillStyle = '#ffffff';
@@ -204,7 +203,6 @@ export class CanvasRenderer {
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
     ctx.stroke();
 
-    // Outer ring notch markings
     for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
       const nx = ox + Math.cos(a) * 44;
       const ny = oy + Math.sin(a) * 44;
@@ -217,9 +215,8 @@ export class CanvasRenderer {
     // 2. Rotating Cannon Barrel / Turret Arrow
     ctx.save();
     ctx.translate(ox, oy);
-    ctx.rotate(-angle + Math.PI / 2); // rotate to aim angle (0 deg angle = horizontal right)
+    ctx.rotate(-angle + Math.PI / 2);
 
-    // Barrel guide arms
     ctx.fillStyle = 'rgba(30, 41, 59, 0.95)';
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
     ctx.lineWidth = 2;
@@ -233,7 +230,6 @@ export class CanvasRenderer {
     ctx.fill();
     ctx.stroke();
 
-    // Nozzle tip accent glow
     ctx.fillStyle = '#38bdf8';
     ctx.fillRect(-10, -56, 20, 4);
 
@@ -253,7 +249,6 @@ export class CanvasRenderer {
     const nextX = ox - 80;
     const nextY = oy + 6;
 
-    // Next bubble dock ring
     ctx.beginPath();
     ctx.arc(nextX, nextY, 28, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
@@ -262,7 +257,6 @@ export class CanvasRenderer {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
     ctx.stroke();
 
-    // "SONRAKİ" label
     ctx.fillStyle = '#94a3b8';
     ctx.font = '600 10px Outfit, sans-serif';
     ctx.textAlign = 'center';
@@ -279,12 +273,47 @@ export class CanvasRenderer {
     ctx.restore();
   }
 
+  // Render Visual Effects: Particles, Falling Bubbles, Score Popups
+  drawEffects(effects: EffectsManager) {
+    const ctx = this.ctx;
+
+    // 1. Draw Falling Bubbles (Hanging clusters dropping)
+    for (const fb of effects.activeFallingBubbles) {
+      this.drawBubble(fb.x, fb.y, fb.bubble, fb.alpha, 1.0);
+    }
+
+    // 2. Draw Pop Particles
+    for (const p of effects.activeParticles) {
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 6;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 3. Draw Floating Score Popups
+    for (const sp of effects.activeScorePopups) {
+      ctx.save();
+      ctx.globalAlpha = sp.alpha;
+      ctx.font = '800 16px Outfit, sans-serif';
+      ctx.fillStyle = sp.color;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      ctx.shadowBlur = 4;
+      ctx.textAlign = 'center';
+      ctx.fillText(sp.text, sp.x, sp.y);
+      ctx.restore();
+    }
+  }
+
   // Ceiling line & border
   drawBoundaries() {
     const ctx = this.ctx;
     ctx.save();
 
-    // Top ceiling bar with gradient
     const ceilGrad = ctx.createLinearGradient(0, 0, this.canvas.width, 0);
     ceilGrad.addColorStop(0, 'rgba(56, 189, 248, 0.3)');
     ceilGrad.addColorStop(0.5, 'rgba(168, 85, 247, 0.5)');
@@ -292,12 +321,10 @@ export class CanvasRenderer {
     ctx.fillStyle = ceilGrad;
     ctx.fillRect(0, 0, this.canvas.width, 3);
 
-    // Side wall subtle glow guides
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.lineWidth = 2;
     ctx.strokeRect(1, 0, this.canvas.width - 2, this.canvas.height);
 
-    // Danger line at bottom near shooter
     const dangerY = this.grid.rowHeight * 12 + this.grid.radius;
     ctx.strokeStyle = 'rgba(239, 68, 68, 0.2)';
     ctx.lineWidth = 1;

@@ -40,7 +40,7 @@ export const COLOR_PALETTE: Record<BubbleColor, ColorVisual> = {
     primary: '#10b981',
     light: '#6ee7b7',
     dark: '#065f46',
-    glow: 'rgba(16, 185, 129, 0.4)'
+    glow: 'rgba(168, 185, 129, 0.4)'
   },
   [BubbleColor.YELLOW]: {
     primary: '#f59e0b',
@@ -90,4 +90,35 @@ export interface TrajectoryResult {
   segments: TrajectorySegment[];
   hitType: 'ceiling' | 'bubble' | 'none';
   targetCell: GridCoord | null;
+}
+
+export interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  color: string;
+  alpha: number;
+  life: number;
+  maxLife: number;
+}
+
+export interface FallingBubble {
+  bubble: Bubble;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  alpha: number;
+}
+
+export interface ScorePopup {
+  text: string;
+  x: number;
+  y: number;
+  vy: number;
+  alpha: number;
+  life: number;
+  color: string;
 }
