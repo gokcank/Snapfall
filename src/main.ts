@@ -70,6 +70,7 @@ class BubbleShooterGame {
 
   private lastTime: number = 0;
   private isTouching: boolean = false;
+  private isTouchDevice: boolean = false;
   private bubbleIdCounter: number = 1;
 
   constructor() {
@@ -300,7 +301,7 @@ class BubbleShooterGame {
 
   private setupInputs() {
     this.canvas.addEventListener('mousemove', (e) => {
-      if (this.state !== 'playing' || this.physics.currentProjectile !== null) return;
+      if (this.isTouchDevice || this.state !== 'playing' || this.physics.currentProjectile !== null) return;
       const pos = this.getCanvasPos(e.clientX, e.clientY);
       this.shooter.setAimTarget(pos.x, pos.y);
     });
@@ -312,7 +313,7 @@ class BubbleShooterGame {
     });
 
     this.canvas.addEventListener('click', (e) => {
-      if (this.state !== 'playing' || this.physics.currentProjectile !== null) return;
+      if (this.isTouchDevice || this.state !== 'playing' || this.physics.currentProjectile !== null) return;
       const pos = this.getCanvasPos(e.clientX, e.clientY);
 
       const nextDockX = this.shooter.origin.x - 80;
@@ -323,9 +324,11 @@ class BubbleShooterGame {
       }
 
       this.fireBubble();
+      this.shooter.stopAiming();
     });
 
     this.canvas.addEventListener('touchstart', (e) => {
+      this.isTouchDevice = true;
       if (this.state !== 'playing' || e.touches.length === 0 || this.physics.currentProjectile !== null) return;
       this.isTouching = true;
       const pos = this.getCanvasPos(e.touches[0].clientX, e.touches[0].clientY);
@@ -335,6 +338,7 @@ class BubbleShooterGame {
       if (Math.hypot(pos.x - nextDockX, pos.y - nextDockY) < 36) {
         this.shooter.swapColors();
         this.isTouching = false;
+        this.shooter.stopAiming();
         return;
       }
 
@@ -350,8 +354,17 @@ class BubbleShooterGame {
     this.canvas.addEventListener('touchend', () => {
       if (this.isTouching && this.state === 'playing' && this.physics.currentProjectile === null) {
         this.isTouching = false;
+        this.shooter.stopAiming();
         this.fireBubble();
+      } else {
+        this.isTouching = false;
+        this.shooter.stopAiming();
       }
+    });
+
+    this.canvas.addEventListener('touchcancel', () => {
+      this.isTouching = false;
+      this.shooter.stopAiming();
     });
 
     window.addEventListener('keydown', (e) => {
@@ -515,6 +528,8 @@ class BubbleShooterGame {
 
   private fireBubble() {
     if (this.physics.currentProjectile !== null) return;
+
+    this.shooter.stopAiming();
 
     const color = this.shooter.consumeBubble();
     const speed = 1250;
@@ -758,8 +773,9 @@ class BubbleShooterGame {
     this.renderer.drawBoundaries(dangerActive);
     this.renderer.drawGrid(this.matrix);
 
-    // Trajectory Line (only when laser enabled and playing)
-    if (this.laserEnabled && this.state === 'playing' && this.physics.currentProjectile === null && (this.shooter.aiming || this.isTouching)) {
+    // Trajectory Line (only when laser enabled, playing, no projectile in flight, and actively aiming)
+    const isActivelyAiming = this.isTouchDevice ? this.isTouching : (this.shooter.aiming || this.isTouching);
+    if (this.laserEnabled && this.state === 'playing' && this.physics.currentProjectile === null && isActivelyAiming) {
       const traj = this.trajectory.calculate(
         this.shooter.origin,
         this.shooter.angle,

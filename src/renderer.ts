@@ -209,7 +209,7 @@ export class CanvasRenderer {
     ctx.restore();
   }
 
-  // Stitch Cyber Cockpit Turret & Energy Indicators
+  // Option 1: Minimalist Frosted Crystal Pedestal, Sleek Directional Arrow & Pearl Drop Indicators
   drawShooter(shooter: CannonShooter, foulsLeft: number = 5, maxFouls: number = 5) {
     const ctx = this.ctx;
     const ox = shooter.origin.x;
@@ -218,132 +218,148 @@ export class CanvasRenderer {
 
     ctx.save();
 
-    // 1. High-Tech Obsidian Base Arc
+    // 1. Sleek Frosted Crystal Pedestal
+    // Base shadow beneath glass disc
     ctx.beginPath();
-    ctx.arc(ox, oy, 52, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(10, 10, 26, 0.95)';
+    ctx.ellipse(ox, oy + 16, 46, 12, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
     ctx.fill();
-    ctx.lineWidth = 2.5;
-    ctx.strokeStyle = 'rgba(0, 242, 255, 0.4)';
+
+    // Pedestal glass disc
+    ctx.beginPath();
+    ctx.ellipse(ox, oy + 10, 44, 12, 0, 0, Math.PI * 2);
+    const pedestalGrad = ctx.createRadialGradient(ox, oy + 8, 4, ox, oy + 10, 44);
+    pedestalGrad.addColorStop(0, "rgba(25, 35, 65, 0.75)");
+    pedestalGrad.addColorStop(0.8, "rgba(10, 15, 30, 0.9)");
+    pedestalGrad.addColorStop(1, "rgba(0, 242, 255, 0.35)");
+    ctx.fillStyle = pedestalGrad;
+    ctx.fill();
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = "rgba(0, 242, 255, 0.6)";
+    ctx.shadowColor = "#00f2ff";
+    ctx.shadowBlur = 8;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Inner delicate glass bevel rim
+    ctx.beginPath();
+    ctx.ellipse(ox, oy + 7, 34, 9, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+    ctx.lineWidth = 1;
     ctx.stroke();
 
-    // Circular notch accents
-    for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
-      const nx = ox + Math.cos(a) * 46;
-      const ny = oy + Math.sin(a) * 46;
-      ctx.beginPath();
-      ctx.arc(nx, ny, 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = '#00f2ff';
-      ctx.shadowColor = '#00f2ff';
-      ctx.shadowBlur = 6;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    }
-
-    // 2. Rotating Turret Barrel with Plasma Core
+    // 2. Sleek Directional Aiming Arrow (Rotates with cannon angle)
     ctx.save();
     ctx.translate(ox, oy);
     ctx.rotate(-angle + Math.PI / 2);
 
-    // Outer cyber barrel casing
-    ctx.fillStyle = 'rgba(20, 20, 38, 0.96)';
-    ctx.strokeStyle = '#00f2ff';
-    ctx.lineWidth = 2;
-
+    // Modern glowing tapered arrow
     ctx.beginPath();
-    ctx.moveTo(-18, -10);
-    ctx.lineTo(-12, -56);
-    ctx.lineTo(12, -56);
-    ctx.lineTo(18, -10);
+    ctx.moveTo(0, -62);           // Sharp tip
+    ctx.lineTo(7.5, -48);         // Right wing
+    ctx.lineTo(2.2, -49.5);       // Right inner notch
+    ctx.lineTo(1.8, -25);         // Right shaft bottom
+    ctx.lineTo(-1.8, -25);        // Left shaft bottom
+    ctx.lineTo(-2.2, -49.5);      // Left inner notch
+    ctx.lineTo(-7.5, -48);        // Left wing
     ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
 
-    // Inner glowing energy core channel
-    const coreGrad = ctx.createLinearGradient(0, -10, 0, -50);
-    coreGrad.addColorStop(0, '#ce5dff');
-    coreGrad.addColorStop(1, '#00f2ff');
-    ctx.fillStyle = coreGrad;
-    ctx.fillRect(-6, -48, 12, 38);
+    const arrowGrad = ctx.createLinearGradient(0, -25, 0, -62);
+    arrowGrad.addColorStop(0, "rgba(0, 242, 255, 0.35)");
+    arrowGrad.addColorStop(0.65, "#00f2ff");
+    arrowGrad.addColorStop(1, "#ffffff");
 
-    // Muzzle emitter band
-    ctx.fillStyle = '#00f2ff';
-    ctx.shadowColor = '#00f2ff';
+    ctx.fillStyle = arrowGrad;
+    ctx.shadowColor = "#00f2ff";
     ctx.shadowBlur = 10;
-    ctx.fillRect(-11, -58, 22, 4);
+    ctx.fill();
     ctx.shadowBlur = 0;
+
+    // Crisp center spine highlight
+    ctx.beginPath();
+    ctx.moveTo(0, -27);
+    ctx.lineTo(0, -59);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
 
     ctx.restore();
 
-    // 3. Loaded Bubble in Cannon Chamber
+    // 3. Loaded Bubble in Pedestal Center
     const reloadScale = 0.5 + 0.5 * shooter.reloadRatio;
     const loadedBubble: Bubble = {
-      id: 'loaded',
+      id: "loaded",
       color: shooter.currentBubbleColor,
       row: -1,
       col: -1
     };
     this.drawBubble(ox, oy, loadedBubble, 1.0, reloadScale);
 
-    // 4. Next Bubble Preview Glass Dock (Left side)
-    const nextX = ox - 86;
-    const nextY = oy + 6;
+    // 4. Next Bubble Glass Cradle (Left side)
+    const nextX = ox - 80;
+    const nextY = oy + 12;
 
+    // Glass cradle saucer
     ctx.beginPath();
-    ctx.arc(nextX, nextY, 30, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(10, 10, 26, 0.85)';
+    ctx.ellipse(nextX, nextY + 10, 26, 9, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(10, 15, 30, 0.75)";
     ctx.fill();
-    ctx.lineWidth = 1.8;
-    ctx.strokeStyle = 'rgba(0, 242, 255, 0.35)';
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = "rgba(0, 242, 255, 0.35)";
     ctx.stroke();
 
-    ctx.fillStyle = '#74f5ff';
-    ctx.font = '700 9px "Space Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('SONRAKİ', nextX, nextY + 44);
+    // Subtle inner ring
+    ctx.beginPath();
+    ctx.ellipse(nextX, nextY + 8, 18, 6, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(116, 245, 255, 0.85)";
+    ctx.font = "600 9px \"Space Mono\", monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("SONRAKİ", nextX, nextY + 28);
 
     const nextBubble: Bubble = {
-      id: 'next',
+      id: "next",
       color: shooter.nextBubbleColor,
       row: -1,
       col: -1
     };
-    this.drawBubble(nextX, nextY, nextBubble, 0.92, 0.82);
+    this.drawBubble(nextX, nextY - 4, nextBubble, 0.9, 0.8);
 
-    // 5. Energy Meter: Vertical Battery Orbs (Right side)
-    const meterX = ox + 72;
-    const meterY = oy - 20;
-
-    // Glass panel behind energy meter
-    ctx.fillStyle = 'rgba(10, 10, 26, 0.75)';
-    ctx.strokeStyle = 'rgba(0, 242, 255, 0.25)';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.roundRect(meterX - 10, meterY - 4, 20, 56, 8);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = foulsLeft <= 1 ? '#ff0055' : '#849495';
-    ctx.font = '700 8px "Space Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('TAVAN', meterX, meterY + 64);
+    // 5. Minimalist Pearl Drop Indicators (Centered below pedestal)
+    const dotsY = oy + 44;
+    const dotSpacing = 16;
+    const startDotX = ox - ((maxFouls - 1) * dotSpacing) / 2;
 
     for (let f = 0; f < maxFouls; f++) {
-      const orbY = meterY + 44 - f * 10;
+      const dotX = startDotX + f * dotSpacing;
       const isFilled = f < foulsLeft;
       const isWarning = foulsLeft <= 1;
 
       ctx.beginPath();
-      ctx.roundRect(meterX - 6, orbY - 3, 12, 6, 2);
+      ctx.arc(dotX, dotsY, 4, 0, Math.PI * 2);
       if (isFilled) {
-        ctx.fillStyle = isWarning ? '#ff0055' : '#00f2ff';
-        ctx.shadowColor = isWarning ? '#ff0055' : '#00f2ff';
+        const dotGlow = isWarning ? "#ff0055" : "#00f2ff";
+        ctx.fillStyle = isWarning ? "#ff2a6d" : "#05d9e8";
+        ctx.shadowColor = dotGlow;
         ctx.shadowBlur = 8;
         ctx.fill();
         ctx.shadowBlur = 0;
-      } else {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+
+        // Tiny pearl specular glint
+        ctx.beginPath();
+        ctx.arc(dotX - 1.2, dotsY - 1.2, 1.2, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
         ctx.fill();
+      } else {
+        // Spent foul: clean translucent glass ring
+        ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.stroke();
       }
     }
 
