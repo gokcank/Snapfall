@@ -19,7 +19,7 @@ class BubbleShooterGame {
   private audio: SoundEffects;
   private matrix: GridMatrix;
 
-  private state: GameState = 'playing';
+  private state: GameState = 'menu';
   private score: number = 0;
   private highScore: number = 0;
   private level: number = 1;
@@ -33,6 +33,8 @@ class BubbleShooterGame {
   private highScoreEl: HTMLElement | null;
   private levelEl: HTMLElement | null;
   private coordInfoEl: HTMLElement | null;
+  private mainMenuModal: HTMLElement | null;
+  private menuHighScoreVal: HTMLElement | null;
   private gameOverModal: HTMLElement | null;
   private victoryModal: HTMLElement | null;
   private goScoreEl: HTMLElement | null;
@@ -50,6 +52,8 @@ class BubbleShooterGame {
     this.levelEl = document.getElementById('levelValue');
     this.coordInfoEl = document.getElementById('coordInfo');
 
+    this.mainMenuModal = document.getElementById('mainMenuModal');
+    this.menuHighScoreVal = document.getElementById('menuHighScoreVal');
     this.gameOverModal = document.getElementById('gameOverModal');
     this.victoryModal = document.getElementById('victoryModal');
     this.goScoreEl = document.getElementById('goScore');
@@ -71,6 +75,10 @@ class BubbleShooterGame {
     this.setupInputs();
     this.setupModalButtons();
 
+    if (this.coordInfoEl) {
+      this.coordInfoEl.textContent = 'Snapfall Arcade: Başlamak için OYUNA BAŞLA butonuna dokunun';
+    }
+
     this.lastTime = performance.now();
     requestAnimationFrame(this.gameLoop);
   }
@@ -82,6 +90,9 @@ class BubbleShooterGame {
       if (this.highScoreEl) {
         this.highScoreEl.textContent = `En Yüksek: ${this.highScore}`;
       }
+      if (this.menuHighScoreVal) {
+        this.menuHighScoreVal.textContent = this.highScore.toString();
+      }
     }
   }
 
@@ -92,6 +103,9 @@ class BubbleShooterGame {
       if (this.highScoreEl) {
         this.highScoreEl.textContent = `En Yüksek: ${this.highScore}`;
       }
+      if (this.menuHighScoreVal) {
+        this.menuHighScoreVal.textContent = this.highScore.toString();
+      }
     }
   }
 
@@ -99,7 +113,6 @@ class BubbleShooterGame {
     this.grid.resetCeiling();
     this.matrix = this.grid.createEmptyMatrix();
     this.foulsLeft = this.maxFouls;
-    this.state = 'playing';
 
     if (this.levelEl) {
       this.levelEl.textContent = lvl.toString();
@@ -128,7 +141,7 @@ class BubbleShooterGame {
       }
     }
 
-    if (this.coordInfoEl) {
+    if (this.state === 'playing' && this.coordInfoEl) {
       this.coordInfoEl.textContent = `Seviye ${lvl} Başladı!`;
     }
   }
@@ -207,6 +220,13 @@ class BubbleShooterGame {
   }
 
   private setupModalButtons() {
+    const btnStartGame = document.getElementById('btnStartGame');
+    if (btnStartGame) {
+      btnStartGame.addEventListener('click', () => {
+        this.startGameFromMenu();
+      });
+    }
+
     const btnRestart = document.getElementById('btnRestart');
     if (btnRestart) {
       btnRestart.addEventListener('click', () => {
@@ -219,6 +239,40 @@ class BubbleShooterGame {
       btnNextLevel.addEventListener('click', () => {
         this.advanceNextLevel();
       });
+    }
+
+    const btnGoHome = document.getElementById('btnGoHome');
+    if (btnGoHome) {
+      btnGoHome.addEventListener('click', () => {
+        this.returnToMainMenu();
+      });
+    }
+
+    const btnVicHome = document.getElementById('btnVicHome');
+    if (btnVicHome) {
+      btnVicHome.addEventListener('click', () => {
+        this.returnToMainMenu();
+      });
+    }
+  }
+
+  private startGameFromMenu() {
+    if (this.mainMenuModal) this.mainMenuModal.classList.add('hidden');
+    this.restartGame();
+    this.state = 'playing';
+    if (this.coordInfoEl) {
+      this.coordInfoEl.textContent = 'Nişan almak için dokunun veya sürükleyin';
+    }
+  }
+
+  private returnToMainMenu() {
+    if (this.gameOverModal) this.gameOverModal.classList.add('hidden');
+    if (this.victoryModal) this.victoryModal.classList.add('hidden');
+    if (this.mainMenuModal) this.mainMenuModal.classList.remove('hidden');
+    this.state = 'menu';
+    this.loadHighScore();
+    if (this.coordInfoEl) {
+      this.coordInfoEl.textContent = 'Snapfall Arcade: Başlamak için OYUNA BAŞLA butonuna dokunun';
     }
   }
 
@@ -369,18 +423,22 @@ class BubbleShooterGame {
 
   private restartGame() {
     if (this.gameOverModal) this.gameOverModal.classList.add('hidden');
+    if (this.victoryModal) this.victoryModal.classList.add('hidden');
+    if (this.mainMenuModal) this.mainMenuModal.classList.add('hidden');
     this.score = 0;
     this.totalPopped = 0;
     this.level = 1;
     this.combo = 0;
     if (this.scoreEl) this.scoreEl.textContent = '0';
     this.initLevel(this.level);
+    this.state = 'playing';
   }
 
   private advanceNextLevel() {
     if (this.victoryModal) this.victoryModal.classList.add('hidden');
     this.level++;
     this.initLevel(this.level);
+    this.state = 'playing';
   }
 
   private gameLoop = (timestamp: number) => {
@@ -394,16 +452,19 @@ class BubbleShooterGame {
   };
 
   private update(dt: number) {
-    this.shooter.update(dt);
     this.effects.update(dt, this.canvas.height);
 
-    if (this.physics.currentProjectile !== null) {
-      const step = this.physics.update(dt, this.matrix);
-      if (step.wallBounced) {
-        this.audio.playWallBounce();
-      }
-      if (step.snappedCell) {
-        this.handleSnap(step.snappedCell);
+    if (this.state === 'playing') {
+      this.shooter.update(dt);
+
+      if (this.physics.currentProjectile !== null) {
+        const step = this.physics.update(dt, this.matrix);
+        if (step.wallBounced) {
+          this.audio.playWallBounce();
+        }
+        if (step.snappedCell) {
+          this.handleSnap(step.snappedCell);
+        }
       }
     }
   }
@@ -415,7 +476,7 @@ class BubbleShooterGame {
     this.renderer.drawBoundaries(dangerActive);
     this.renderer.drawGrid(this.matrix);
 
-    // Trajectory Line
+    // Trajectory Line (only when actively playing)
     if (this.state === 'playing' && this.physics.currentProjectile === null && (this.shooter.aiming || this.isTouching)) {
       const traj = this.trajectory.calculate(
         this.shooter.origin,

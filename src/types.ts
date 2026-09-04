@@ -123,7 +123,7 @@ export interface ScorePopup {
   color: string;
 }
 
-export type GameState = 'playing' | 'gameover' | 'victory';
+export type GameState = 'menu' | 'playing' | 'paused' | 'gameover' | 'victory';
 
 export interface GameStats {
   score: number;

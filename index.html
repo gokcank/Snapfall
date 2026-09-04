@@ -30,6 +30,24 @@
       <main class="canvas-wrapper">
         <canvas id="gameCanvas" width="480" height="680"></canvas>
 
+        <!-- Main Menu Modal -->
+        <div class="modal-overlay" id="mainMenuModal">
+          <div class="modal-card menu-card">
+            <div class="menu-icon">🎯</div>
+            <h1 class="menu-title">SNAPFALL</h1>
+            <p class="menu-subtitle">Cyber Bubble Shooter</p>
+            
+            <div class="menu-high-score">
+              <span class="menu-high-label">EN YÜKSEK SKOR</span>
+              <span class="menu-high-val" id="menuHighScoreVal">0</span>
+            </div>
+
+            <div class="modal-actions-col">
+              <button class="btn-primary" id="btnStartGame">OYUNA BAŞLA</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Game Over Modal -->
         <div class="modal-overlay hidden" id="gameOverModal">
           <div class="modal-card gameover-card">
@@ -48,7 +66,10 @@
               </div>
             </div>
 
-            <button class="btn-primary" id="btnRestart">TEKRAR DENE</button>
+            <div class="modal-actions-row">
+              <button class="btn-primary" id="btnRestart">TEKRAR DENE</button>
+              <button class="btn-secondary" id="btnGoHome">ANA MENÜ</button>
+            </div>
           </div>
         </div>
 
@@ -70,7 +91,10 @@
               </div>
             </div>
 
-            <button class="btn-primary" id="btnNextLevel">SONRAKİ SEVİYE</button>
+            <div class="modal-actions-row">
+              <button class="btn-primary" id="btnNextLevel">SONRAKİ SEVİYE</button>
+              <button class="btn-secondary" id="btnVicHome">ANA MENÜ</button>
+            </div>
           </div>
         </div>
       </main>
