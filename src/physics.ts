@@ -44,7 +44,6 @@ export class PhysicsEngine {
     const r = this.grid.radius;
     let wallBounced = false;
 
-    // Movement substeps to prevent tunneling at high speeds (e.g., speed = 1200 px/s)
     const substeps = 4;
     const subDt = dt / substeps;
 
@@ -63,9 +62,10 @@ export class PhysicsEngine {
         wallBounced = true;
       }
 
-      // 2. Ceiling Collision
-      if (p.y <= r) {
-        p.y = r;
+      // 2. Ceiling Collision (relative to descending ceiling bar)
+      const currentCeilingY = this.grid.ceilingY + r;
+      if (p.y <= currentCeilingY) {
+        p.y = currentCeilingY;
         const snap = this.grid.findClosestEmptyCell({ x: p.x, y: p.y }, matrix, false);
         if (snap) {
           const bubble: Bubble = {
@@ -97,7 +97,6 @@ export class PhysicsEngine {
           const distSq = dx * dx + dy * dy;
 
           if (distSq <= collDistSq) {
-            // Collision detected! Snap into nearest empty cell
             const snap = this.grid.findClosestEmptyCell({ x: p.x, y: p.y }, matrix, true);
             if (snap) {
               const newBubble: Bubble = {

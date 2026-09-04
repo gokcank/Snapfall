@@ -21,12 +21,12 @@ export class TrajectoryCalculator {
     const segments: TrajectorySegment[] = [];
     let currentStart: Vector2D = { x: origin.x, y: origin.y };
     let dx = Math.cos(clampedAngle);
-    let dy = -Math.sin(clampedAngle); // canvas y is inverted
+    let dy = -Math.sin(clampedAngle);
 
     const r = this.grid.radius;
     const leftWall = r;
     const rightWall = this.grid.width - r;
-    const ceiling = r;
+    const ceiling = this.grid.ceilingY + r;
 
     let hitType: 'ceiling' | 'bubble' | 'none' = 'none';
     let targetCell: GridCoord | null = null;
@@ -63,7 +63,6 @@ export class TrajectoryCalculator {
           const deltaX = currentStart.x - center.x;
           const deltaY = currentStart.y - center.y;
 
-          // Solve t^2 + 2 t (Delta . D) + |Delta|^2 - collDistSq = 0
           const bQuad = 2 * (deltaX * dx + deltaY * dy);
           const cQuad = deltaX * deltaX + deltaY * deltaY - collDistSq;
           const disc = bQuad * bQuad - 4 * cQuad;
@@ -79,7 +78,6 @@ export class TrajectoryCalculator {
 
       // 4. Determine nearest obstacle
       if (tBubble < tCeil && tBubble < tWall) {
-        // Hit a bubble
         const endX = currentStart.x + dx * tBubble;
         const endY = currentStart.y + dy * tBubble;
         segments.push({ start: currentStart, end: { x: endX, y: endY } });
@@ -87,7 +85,6 @@ export class TrajectoryCalculator {
         targetCell = this.grid.findClosestEmptyCell({ x: endX, y: endY }, matrix, true);
         break;
       } else if (tCeil <= tWall && tCeil < Infinity) {
-        // Hit the ceiling
         const endX = currentStart.x + dx * tCeil;
         const endY = ceiling;
         segments.push({ start: currentStart, end: { x: endX, y: endY } });
@@ -95,13 +92,12 @@ export class TrajectoryCalculator {
         targetCell = this.grid.findClosestEmptyCell({ x: endX, y: endY }, matrix, false);
         break;
       } else if (tWall < Infinity) {
-        // Hit a side wall -> reflect!
         const hitY = currentStart.y + dy * tWall;
         const endPos = { x: wallHitX, y: hitY };
         segments.push({ start: currentStart, end: endPos });
 
         currentStart = endPos;
-        dx = -dx; // reflect horizontally
+        dx = -dx;
       } else {
         break;
       }

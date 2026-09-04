@@ -7,6 +7,7 @@ export class HexGrid {
   readonly maxRows: number;
   readonly rowHeight: number;
   readonly width: number;
+  ceilingY: number = 0; // Descending ceiling offset (Puzzle Bobble mechanics)
 
   constructor(radius: number = 24, colsEven: number = 10, maxRows: number = 16) {
     this.radius = radius;
@@ -15,6 +16,7 @@ export class HexGrid {
     this.maxRows = maxRows;
     this.rowHeight = Math.sqrt(3) * radius;
     this.width = colsEven * radius * 2;
+    this.ceilingY = 0;
   }
 
   getColsInRow(row: number): number {
@@ -31,12 +33,13 @@ export class HexGrid {
     const isOdd = row % 2 === 1;
     const xOffset = isOdd ? this.radius * 2 : this.radius;
     const x = xOffset + col * (this.radius * 2);
-    const y = this.radius + row * this.rowHeight;
+    const y = this.ceilingY + this.radius + row * this.rowHeight;
     return { x, y };
   }
 
   worldToGrid(x: number, y: number): GridCoord {
-    const approxRow = Math.max(0, Math.min(this.maxRows - 1, Math.round((y - this.radius) / this.rowHeight)));
+    const relativeY = y - (this.ceilingY + this.radius);
+    const approxRow = Math.max(0, Math.min(this.maxRows - 1, Math.round(relativeY / this.rowHeight)));
     const isOdd = approxRow % 2 === 1;
     const xOffset = isOdd ? this.radius * 2 : this.radius;
     const maxCols = this.getColsInRow(approxRow);
@@ -94,49 +97,28 @@ export class HexGrid {
     return true;
   }
 
-  hasReachedDangerLine(matrix: GridMatrix, dangerRow: number = 12): boolean {
-    for (let r = dangerRow; r < this.maxRows; r++) {
+  hasReachedDangerLine(matrix: GridMatrix, dangerY: number = 520): boolean {
+    for (let r = 0; r < this.maxRows; r++) {
       const cols = this.getColsInRow(r);
       for (let c = 0; c < cols; c++) {
-        if (matrix[r][c] !== null) return true;
+        if (matrix[r][c] !== null) {
+          const worldY = this.gridToWorld(r, c).y;
+          if (worldY + this.radius >= dangerY) {
+            return true;
+          }
+        }
       }
     }
     return false;
   }
 
-  shiftDown(matrix: GridMatrix, newRowBubbles: (Bubble | null)[]): boolean {
-    // Shift rows downwards
-    for (let r = this.maxRows - 1; r > 0; r--) {
-      const targetCols = this.getColsInRow(r);
-      const sourceCols = this.getColsInRow(r - 1);
-      const limit = Math.min(targetCols, sourceCols);
+  lowerCeiling(steps: number = 1, dangerY: number = 520): boolean {
+    this.ceilingY += steps * this.rowHeight;
+    return this.ceilingY + this.radius >= dangerY;
+  }
 
-      for (let c = 0; c < limit; c++) {
-        const bubble = matrix[r - 1][c];
-        if (bubble) {
-          bubble.row = r;
-          bubble.col = c;
-          matrix[r][c] = bubble;
-        } else {
-          matrix[r][c] = null;
-        }
-      }
-      for (let c = limit; c < targetCols; c++) {
-        matrix[r][c] = null;
-      }
-    }
-
-    // Insert new row at row 0 (Row 0 is always colsEven length)
-    for (let c = 0; c < this.colsEven; c++) {
-      const bubble = newRowBubbles[c] || null;
-      if (bubble) {
-        bubble.row = 0;
-        bubble.col = c;
-      }
-      matrix[0][c] = bubble;
-    }
-
-    return this.hasReachedDangerLine(matrix, 12);
+  resetCeiling() {
+    this.ceilingY = 0;
   }
 
   findClosestEmptyCell(
@@ -144,7 +126,8 @@ export class HexGrid {
     matrix: GridMatrix,
     requireAnchor: boolean = true
   ): GridCoord | null {
-    const approxRow = Math.max(0, Math.min(this.maxRows - 1, Math.round((worldPos.y - this.radius) / this.rowHeight)));
+    const relativeY = worldPos.y - (this.ceilingY + this.radius);
+    const approxRow = Math.max(0, Math.min(this.maxRows - 1, Math.round(relativeY / this.rowHeight)));
     let bestCoord: GridCoord | null = null;
     let minDistanceSq = Infinity;
 

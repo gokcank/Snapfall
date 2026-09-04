@@ -6,7 +6,7 @@ import { PhysicsEngine } from './physics';
 import { CanvasRenderer } from './renderer';
 import { CannonShooter } from './shooter';
 import { TrajectoryCalculator } from './trajectory';
-import { Bubble, BubbleColor, GameState, GridMatrix } from './types';
+import { BubbleColor, GameState, GridMatrix } from './types';
 
 class BubbleShooterGame {
   private canvas: HTMLCanvasElement;
@@ -96,6 +96,7 @@ class BubbleShooterGame {
   }
 
   private initLevel(lvl: number) {
+    this.grid.resetCeiling();
     this.matrix = this.grid.createEmptyMatrix();
     this.foulsLeft = this.maxFouls;
     this.state = 'playing';
@@ -112,7 +113,6 @@ class BubbleShooterGame {
       BubbleColor.PURPLE
     ];
 
-    // Number of initial rows scales slightly with level (min 4, max 6)
     const initialRows = Math.min(6, 3 + lvl);
     for (let r = 0; r < initialRows; r++) {
       const cols = this.grid.getColsInRow(r);
@@ -289,13 +289,12 @@ class BubbleShooterGame {
         }
       }
 
-      // Check Victory (grid completely cleared)
+      // Check Victory
       if (this.grid.isGridEmpty(this.matrix)) {
         this.triggerVictory();
         return;
       }
     } else {
-      // Missed shot: decrement foul counter
       this.combo = 0;
       this.score += 10;
       this.foulsLeft--;
@@ -309,13 +308,19 @@ class BubbleShooterGame {
       }
     }
 
+    // Always clean up any unanchored bubbles
+    const lingeringFloating = MatchFinder.findFloatingBubbles(this.grid, this.matrix);
+    if (lingeringFloating.length > 0) {
+      this.effects.addFallingBubbles(lingeringFloating, (r, c) => this.grid.gridToWorld(r, c));
+    }
+
     this.updateHighScore();
     if (this.scoreEl) {
       this.scoreEl.textContent = this.score.toString();
     }
 
-    // Check Game Over threshold
-    if (this.grid.hasReachedDangerLine(this.matrix, 12)) {
+    // Check Game Over threshold (danger line at y = 520)
+    if (this.grid.hasReachedDangerLine(this.matrix, 520)) {
       this.triggerGameOver();
     }
   }
@@ -324,33 +329,20 @@ class BubbleShooterGame {
     this.foulsLeft = this.maxFouls;
     this.audio.playWarning();
 
-    const colors = [
-      BubbleColor.RED,
-      BubbleColor.BLUE,
-      BubbleColor.GREEN,
-      BubbleColor.YELLOW,
-      BubbleColor.PURPLE
-    ];
+    const dangerHit = this.grid.lowerCeiling(1, 520);
 
-    const newRowBubbles: (Bubble | null)[] = [];
-    for (let c = 0; c < this.grid.colsEven; c++) {
-      const col = colors[Math.floor(Math.random() * colors.length)];
-      newRowBubbles.push({
-        id: `drop-${this.bubbleIdCounter++}`,
-        color: col,
-        row: 0,
-        col: c,
-        state: 'idle'
-      });
+    // After ceiling drops, immediately drop any disconnected bubbles
+    const floating = MatchFinder.findFloatingBubbles(this.grid, this.matrix);
+    if (floating.length > 0) {
+      this.audio.playDrop();
+      this.effects.addFallingBubbles(floating, (r, c) => this.grid.gridToWorld(r, c));
     }
-
-    const hitDanger = this.grid.shiftDown(this.matrix, newRowBubbles);
 
     if (this.coordInfoEl) {
       this.coordInfoEl.textContent = '⚠️ DİKKAT! Tavan bir kademe alçaldı!';
     }
 
-    if (hitDanger || this.grid.hasReachedDangerLine(this.matrix, 12)) {
+    if (dangerHit || this.grid.hasReachedDangerLine(this.matrix, 520)) {
       this.triggerGameOver();
     }
   }
@@ -419,7 +411,7 @@ class BubbleShooterGame {
   private render() {
     this.renderer.clear();
 
-    const dangerActive = this.grid.hasReachedDangerLine(this.matrix, 10);
+    const dangerActive = this.grid.hasReachedDangerLine(this.matrix, 480);
     this.renderer.drawBoundaries(dangerActive);
     this.renderer.drawGrid(this.matrix);
 

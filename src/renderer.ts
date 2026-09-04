@@ -329,25 +329,55 @@ export class CanvasRenderer {
     }
   }
 
-  // Boundaries & Danger Line
+  // Boundaries & Descending Ceiling Bar
   drawBoundaries(hasWarning: boolean = false) {
     const ctx = this.ctx;
     ctx.save();
 
-    const ceilGrad = ctx.createLinearGradient(0, 0, this.canvas.width, 0);
-    ceilGrad.addColorStop(0, 'rgba(56, 189, 248, 0.4)');
-    ceilGrad.addColorStop(0.5, 'rgba(168, 85, 247, 0.6)');
-    ceilGrad.addColorStop(1, 'rgba(56, 189, 248, 0.4)');
-    ctx.fillStyle = ceilGrad;
-    ctx.fillRect(0, 0, this.canvas.width, 4);
+    const cY = this.grid.ceilingY;
 
+    // 1. Descending ceiling press body (if lowered from top)
+    if (cY > 0) {
+      // Dark metallic press slab
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.96)';
+      ctx.fillRect(0, 0, this.canvas.width, cY);
+
+      // Warning hazard stripes along the ceiling press
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, this.canvas.width, cY);
+      ctx.clip();
+      ctx.lineWidth = 10;
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.12)';
+      for (let x = -cY; x < this.canvas.width + cY; x += 24) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + cY, cY);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 2. Ceiling rim bar
+    const ceilGrad = ctx.createLinearGradient(0, 0, this.canvas.width, 0);
+    ceilGrad.addColorStop(0, 'rgba(56, 189, 248, 0.8)');
+    ceilGrad.addColorStop(0.5, 'rgba(168, 85, 247, 0.9)');
+    ceilGrad.addColorStop(1, 'rgba(56, 189, 248, 0.8)');
+    ctx.fillStyle = ceilGrad;
+    ctx.fillRect(0, cY, this.canvas.width, 4);
+
+    // Ceiling bottom glow
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+    ctx.fillRect(0, cY + 4, this.canvas.width, 2);
+
+    // 3. Side walls
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(1, 0, this.canvas.width - 2, this.canvas.height);
+    ctx.strokeRect(1, cY, this.canvas.width - 2, this.canvas.height - cY);
 
-    // Danger line at row 12
-    const dangerY = this.grid.rowHeight * 12 + this.grid.radius;
-    ctx.strokeStyle = hasWarning ? 'rgba(239, 68, 68, 0.8)' : 'rgba(239, 68, 68, 0.25)';
+    // 4. Danger line at bottom (fixed world coordinate y = 520)
+    const dangerY = 520;
+    ctx.strokeStyle = hasWarning ? 'rgba(239, 68, 68, 0.85)' : 'rgba(239, 68, 68, 0.25)';
     ctx.lineWidth = hasWarning ? 2 : 1;
     ctx.setLineDash([6, 4]);
     ctx.beginPath();
@@ -359,7 +389,8 @@ export class CanvasRenderer {
     if (hasWarning) {
       ctx.font = '700 10px Outfit, sans-serif';
       ctx.fillStyle = '#ef4444';
-      ctx.fillText('TEHLİKE ÇİZGİSİ', this.canvas.width / 2 - 40, dangerY - 6);
+      ctx.textAlign = 'center';
+      ctx.fillText('⚠️ TEHLİKE ÇİZGİSİ', this.canvas.width / 2, dangerY - 6);
     }
 
     ctx.restore();
