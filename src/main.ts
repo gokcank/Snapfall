@@ -6,7 +6,7 @@ import { PhysicsEngine } from './physics';
 import { CanvasRenderer } from './renderer';
 import { CannonShooter } from './shooter';
 import { TrajectoryCalculator } from './trajectory';
-import { BubbleColor, GameState, GridMatrix } from './types';
+import { BubbleColor, GameMode, GameState, GridMatrix } from './types';
 
 class BubbleShooterGame {
   private canvas: HTMLCanvasElement;
@@ -20,6 +20,7 @@ class BubbleShooterGame {
   private matrix: GridMatrix;
 
   private state: GameState = 'menu';
+  private mode: GameMode = 'classic';
   private score: number = 0;
   private highScore: number = 0;
   private level: number = 1;
@@ -31,10 +32,14 @@ class BubbleShooterGame {
   // DOM Elements
   private scoreEl: HTMLElement | null;
   private highScoreEl: HTMLElement | null;
+  private levelLabelEl: HTMLElement | null;
   private levelEl: HTMLElement | null;
   private coordInfoEl: HTMLElement | null;
   private mainMenuModal: HTMLElement | null;
   private menuHighScoreVal: HTMLElement | null;
+  private btnModeClassic: HTMLElement | null;
+  private btnModeSurvival: HTMLElement | null;
+  private modeDescText: HTMLElement | null;
   private gameOverModal: HTMLElement | null;
   private victoryModal: HTMLElement | null;
   private goScoreEl: HTMLElement | null;
@@ -49,11 +54,16 @@ class BubbleShooterGame {
     this.canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
     this.scoreEl = document.getElementById('scoreValue');
     this.highScoreEl = document.getElementById('highScoreText');
+    this.levelLabelEl = document.getElementById('levelLabel');
     this.levelEl = document.getElementById('levelValue');
     this.coordInfoEl = document.getElementById('coordInfo');
 
     this.mainMenuModal = document.getElementById('mainMenuModal');
     this.menuHighScoreVal = document.getElementById('menuHighScoreVal');
+    this.btnModeClassic = document.getElementById('btnModeClassic');
+    this.btnModeSurvival = document.getElementById('btnModeSurvival');
+    this.modeDescText = document.getElementById('modeDescText');
+
     this.gameOverModal = document.getElementById('gameOverModal');
     this.victoryModal = document.getElementById('victoryModal');
     this.goScoreEl = document.getElementById('goScore');
@@ -70,10 +80,11 @@ class BubbleShooterGame {
 
     this.shooter = new CannonShooter({ x: this.canvas.width / 2, y: 615 });
 
-    this.loadHighScore();
+    this.loadSavedSettings();
     this.initLevel(this.level);
     this.setupInputs();
     this.setupModalButtons();
+    this.setupModeSelector();
 
     if (this.coordInfoEl) {
       this.coordInfoEl.textContent = 'Snapfall Arcade: Başlamak için OYUNA BAŞLA butonuna dokunun';
@@ -83,16 +94,52 @@ class BubbleShooterGame {
     requestAnimationFrame(this.gameLoop);
   }
 
-  private loadHighScore() {
-    const saved = localStorage.getItem('snapfall_highscore');
-    if (saved) {
-      this.highScore = parseInt(saved, 10) || 0;
+  private loadSavedSettings() {
+    const savedScore = localStorage.getItem('snapfall_highscore');
+    if (savedScore) {
+      this.highScore = parseInt(savedScore, 10) || 0;
       if (this.highScoreEl) {
         this.highScoreEl.textContent = `En Yüksek: ${this.highScore}`;
       }
       if (this.menuHighScoreVal) {
         this.menuHighScoreVal.textContent = this.highScore.toString();
       }
+    }
+
+    const savedMode = localStorage.getItem('snapfall_mode') as GameMode | null;
+    if (savedMode === 'survival' || savedMode === 'classic') {
+      this.setMode(savedMode);
+    } else {
+      this.setMode('classic');
+    }
+  }
+
+  private setMode(newMode: GameMode) {
+    this.mode = newMode;
+    localStorage.setItem('snapfall_mode', newMode);
+
+    if (this.btnModeClassic && this.btnModeSurvival && this.modeDescText) {
+      if (newMode === 'classic') {
+        this.btnModeClassic.classList.add('active');
+        this.btnModeSurvival.classList.remove('active');
+        this.modeDescText.textContent = 'Bölüm bazlı: Tüm balonları temizleyerek seviyeleri aşın.';
+      } else {
+        this.btnModeSurvival.classList.add('active');
+        this.btnModeClassic.classList.remove('active');
+        this.modeDescText.textContent = 'Sonsuz mod: Balonlar sürekli yenilenir, rekor skoru hedefleyin!';
+      }
+    }
+
+    this.updateLevelDisplay();
+  }
+
+  private updateLevelDisplay() {
+    if (this.mode === 'classic') {
+      if (this.levelLabelEl) this.levelLabelEl.textContent = 'Seviye';
+      if (this.levelEl) this.levelEl.textContent = this.level.toString();
+    } else {
+      if (this.levelLabelEl) this.levelLabelEl.textContent = 'Mod';
+      if (this.levelEl) this.levelEl.textContent = 'Sonsuz';
     }
   }
 
@@ -112,11 +159,16 @@ class BubbleShooterGame {
   private initLevel(lvl: number) {
     this.grid.resetCeiling();
     this.matrix = this.grid.createEmptyMatrix();
-    this.foulsLeft = this.maxFouls;
 
-    if (this.levelEl) {
-      this.levelEl.textContent = lvl.toString();
+    if (this.mode === 'classic') {
+      this.maxFouls = 5;
+      this.foulsLeft = 5;
+    } else {
+      this.maxFouls = 4;
+      this.foulsLeft = 4;
     }
+
+    this.updateLevelDisplay();
 
     const colors = [
       BubbleColor.RED,
@@ -126,7 +178,7 @@ class BubbleShooterGame {
       BubbleColor.PURPLE
     ];
 
-    const initialRows = Math.min(6, 3 + lvl);
+    const initialRows = this.mode === 'classic' ? Math.min(6, 3 + lvl) : 5;
     for (let r = 0; r < initialRows; r++) {
       const cols = this.grid.getColsInRow(r);
       for (let c = 0; c < cols; c++) {
@@ -142,7 +194,7 @@ class BubbleShooterGame {
     }
 
     if (this.state === 'playing' && this.coordInfoEl) {
-      this.coordInfoEl.textContent = `Seviye ${lvl} Başladı!`;
+      this.coordInfoEl.textContent = this.mode === 'classic' ? `Seviye ${lvl} Başladı!` : 'Sonsuz Hayatta Kalma Başladı!';
     }
   }
 
@@ -219,6 +271,16 @@ class BubbleShooterGame {
     });
   }
 
+  private setupModeSelector() {
+    this.btnModeClassic?.addEventListener('click', () => {
+      this.setMode('classic');
+    });
+
+    this.btnModeSurvival?.addEventListener('click', () => {
+      this.setMode('survival');
+    });
+  }
+
   private setupModalButtons() {
     const btnStartGame = document.getElementById('btnStartGame');
     if (btnStartGame) {
@@ -270,7 +332,7 @@ class BubbleShooterGame {
     if (this.victoryModal) this.victoryModal.classList.add('hidden');
     if (this.mainMenuModal) this.mainMenuModal.classList.remove('hidden');
     this.state = 'menu';
-    this.loadHighScore();
+    this.loadSavedSettings();
     if (this.coordInfoEl) {
       this.coordInfoEl.textContent = 'Snapfall Arcade: Başlamak için OYUNA BAŞLA butonuna dokunun';
     }
@@ -285,6 +347,44 @@ class BubbleShooterGame {
 
     if (this.coordInfoEl) {
       this.coordInfoEl.textContent = `Ateşlendi! [${color}]`;
+    }
+  }
+
+  private countTotalBubbles(): number {
+    let count = 0;
+    for (let r = 0; r < this.grid.maxRows; r++) {
+      const cols = this.grid.getColsInRow(r);
+      for (let c = 0; c < cols; c++) {
+        if (this.matrix[r][c] !== null) count++;
+      }
+    }
+    return count;
+  }
+
+  private replenishSurvivalRow() {
+    // In survival mode, when bubbles are depleted, add fresh bubbles to top rows
+    const colors = [
+      BubbleColor.RED,
+      BubbleColor.BLUE,
+      BubbleColor.GREEN,
+      BubbleColor.YELLOW,
+      BubbleColor.PURPLE
+    ];
+
+    for (let r = 0; r < 3; r++) {
+      const cols = this.grid.getColsInRow(r);
+      for (let c = 0; c < cols; c++) {
+        if (this.matrix[r][c] === null) {
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          this.matrix[r][c] = {
+            id: `b-${this.bubbleIdCounter++}`,
+            color,
+            row: r,
+            col: c,
+            state: 'idle'
+          };
+        }
+      }
     }
   }
 
@@ -343,10 +443,17 @@ class BubbleShooterGame {
         }
       }
 
-      // Check Victory
-      if (this.grid.isGridEmpty(this.matrix)) {
-        this.triggerVictory();
-        return;
+      // Check Victory vs Endless Replenish
+      if (this.mode === 'classic') {
+        if (this.grid.isGridEmpty(this.matrix)) {
+          this.triggerVictory();
+          return;
+        }
+      } else {
+        // Survival mode: if bubbles are low, replenish top rows
+        if (this.countTotalBubbles() < 18) {
+          this.replenishSurvivalRow();
+        }
       }
     } else {
       this.combo = 0;

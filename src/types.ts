@@ -133,3 +133,5 @@ export interface GameStats {
   maxFouls: number;
   bubblesPopped: number;
 }
+
+export type GameMode = 'classic' | 'survival';
