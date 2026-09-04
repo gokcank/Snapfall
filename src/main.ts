@@ -437,6 +437,76 @@ class BubbleShooterGame {
     this.btnCloseSettings?.addEventListener('click', () => {
       this.closeSettings();
     });
+
+    // Arcade Cabinet CPO Action Buttons
+    const btnA = document.querySelector('.cpo-arcade-btn.btn-a');
+    const btnB = document.querySelector('.cpo-arcade-btn.btn-b');
+    const btnC = document.querySelector('.cpo-arcade-btn.btn-c');
+    const btnD = document.querySelector('.cpo-arcade-btn.btn-d');
+
+    btnA?.addEventListener('click', () => {
+      if (this.state === 'playing') {
+        this.fireBubble();
+      }
+    });
+
+    btnB?.addEventListener('click', () => {
+      if (this.state === 'playing') {
+        this.shooter.swapColors();
+      }
+    });
+
+    btnC?.addEventListener('click', () => {
+      this.toggleSound();
+    });
+
+    btnD?.addEventListener('click', () => {
+      this.toggleLaser();
+    });
+
+    // Arcade Joystick Interactive Drag & Aim
+    const stickWrap = document.querySelector('.cpo-joystick-wrap') as HTMLElement | null;
+    const stickBall = document.querySelector('.cpo-joystick-ball') as HTMLElement | null;
+    if (stickWrap && stickBall) {
+      let isDraggingStick = false;
+      const onStickMove = (clientX: number) => {
+        if (!isDraggingStick) return;
+        const rect = stickWrap.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const diffX = clientX - centerX;
+        const clampedDiff = Math.max(-14, Math.min(14, diffX));
+        stickBall.style.transform = `translate(${clampedDiff}px, ${Math.abs(clampedDiff) * 0.3}px)`;
+        
+        // Tilt aim angle
+        if (this.state === 'playing') {
+          const aimX = this.shooter.origin.x + (clampedDiff / 14) * 220;
+          const aimY = this.shooter.origin.y - 300;
+          this.shooter.setAimTarget(aimX, aimY);
+        }
+      };
+
+      stickWrap.addEventListener('pointerdown', (e) => {
+        isDraggingStick = true;
+        stickWrap.setPointerCapture(e.pointerId);
+        onStickMove(e.clientX);
+      });
+
+      stickWrap.addEventListener('pointermove', (e) => {
+        if (isDraggingStick) {
+          onStickMove(e.clientX);
+        }
+      });
+
+      const onStickRelease = () => {
+        if (isDraggingStick) {
+          isDraggingStick = false;
+          stickBall.style.transform = 'translate(0px, 0px)';
+        }
+      };
+
+      stickWrap.addEventListener('pointerup', onStickRelease);
+      stickWrap.addEventListener('pointercancel', onStickRelease);
+    }
   }
 
   private setupModalButtons() {

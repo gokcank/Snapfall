@@ -11,31 +11,40 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div class="game-container">
-      <header class="hud-header">
-        <div class="arcade-speaker-grille">
-          <span></span><span></span><span></span>
-        </div>
-        <div class="hud-stat">
-          <span class="hud-label">Skor</span>
-          <span class="hud-value" id="scoreValue">0</span>
-        </div>
-        <div class="hud-center">
-          <div class="hud-title">Snapfall</div>
-          <div class="hud-high" id="highScoreText">En Yüksek: 0</div>
-        </div>
-        <div class="hud-right-group">
-          <div class="hud-stat" style="text-align: right;">
-            <span class="hud-label" id="levelLabel">Seviye</span>
-            <span class="hud-value" id="levelValue">1</span>
+    <div class="arcade-cabinet-frame">
+      <!-- Outer Cabinet T-Molding Left Wing -->
+      <div class="cabinet-side-wing left"></div>
+
+      <div class="game-container">
+        <!-- Top Marquee Hood / Cabinet Canopy -->
+        <div class="arcade-marquee-header">
+          <div class="marquee-sign">
+            <span class="marquee-logo-badge">NEO•GEO</span>
+            <span class="marquee-title-text">SNAPFALL '96</span>
           </div>
-          <button class="hud-icon-btn" id="btnHudSound" title="Sesi Aç/Kapat">🔊</button>
-          <button class="hud-icon-btn" id="btnHudPause" title="Duraklat">⏸️</button>
+          <div class="arcade-speaker-cluster">
+            <span></span><span></span><span></span><span></span>
+          </div>
         </div>
-        <div class="arcade-speaker-grille">
-          <span></span><span></span><span></span>
-        </div>
-      </header>
+
+        <header class="hud-header">
+          <div class="hud-stat">
+            <span class="hud-label">Skor</span>
+            <span class="hud-value" id="scoreValue">0</span>
+          </div>
+          <div class="hud-center">
+            <div class="hud-title">Snapfall</div>
+            <div class="hud-high" id="highScoreText">En Yüksek: 0</div>
+          </div>
+          <div class="hud-right-group">
+            <div class="hud-stat" style="text-align: right;">
+              <span class="hud-label" id="levelLabel">Seviye</span>
+              <span class="hud-value" id="levelValue">1</span>
+            </div>
+            <button class="hud-icon-btn" id="btnHudSound" title="Sesi Aç/Kapat">🔊</button>
+            <button class="hud-icon-btn" id="btnHudPause" title="Duraklat">⏸️</button>
+          </div>
+        </header>
 
       <main class="canvas-wrapper">
         <span class="bezel-screw top-left"></span>
@@ -162,12 +171,13 @@
         </div>
       </main>
 
-      <!-- Compact Neo-Geo Arcade Control Panel Strip -->
+      <!-- Slanted Physical Arcade Control Deck (CPO) -->
       <footer class="arcade-cpo-panel">
         <div class="cpo-joystick-wrap" title="Arcade Joystick">
           <div class="cpo-joystick-washer"></div>
           <div class="cpo-joystick-shaft"></div>
           <div class="cpo-joystick-ball"></div>
+          <span class="cpo-sub-label">1P STICK</span>
         </div>
 
         <div class="cpo-center-deck">
@@ -179,13 +189,20 @@
         </div>
 
         <div class="cpo-buttons-wrap">
-          <button type="button" class="cpo-arcade-btn btn-a" title="A">A</button>
-          <button type="button" class="cpo-arcade-btn btn-b" title="B">B</button>
-          <button type="button" class="cpo-arcade-btn btn-c" title="C">C</button>
-          <button type="button" class="cpo-arcade-btn btn-d" title="D">D</button>
+          <div class="cpo-button-cluster">
+            <button type="button" class="cpo-arcade-btn btn-a" title="A">A</button>
+            <button type="button" class="cpo-arcade-btn btn-b" title="B">B</button>
+            <button type="button" class="cpo-arcade-btn btn-c" title="C">C</button>
+            <button type="button" class="cpo-arcade-btn btn-d" title="D">D</button>
+          </div>
+          <span class="cpo-sub-label">ACTIONS</span>
         </div>
       </footer>
     </div>
-    <script type="module" src="/src/main.ts"></script>
+
+    <!-- Outer Cabinet T-Molding Right Wing -->
+    <div class="cabinet-side-wing right"></div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
