@@ -145,13 +145,12 @@ export class CanvasRenderer {
     }
   }
 
-  // Trajectory reflection line & ghost target snap preview
+  // 90s Retro Arcade Dotted Aim Line & Ghost Snap Preview
   drawTrajectory(traj: TrajectoryResult, currentColor: import('./types').BubbleColor) {
     const ctx = this.ctx;
     ctx.save();
 
     const visual = COLOR_PALETTE[currentColor];
-    ctx.strokeStyle = visual.primary;
 
     for (const seg of traj.segments) {
       const dx = seg.end.x - seg.start.x;
@@ -164,13 +163,18 @@ export class CanvasRenderer {
         const t = (i * dotSpacing) / length;
         const px = seg.start.x + dx * t;
         const py = seg.start.y + dy * t;
-        const radius = 3.6;
+        const radius = 3.2;
 
+        // Outer crisp bead ring
         ctx.beginPath();
         ctx.arc(px, py, radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffffff';
-        ctx.shadowColor = visual.primary;
-        ctx.shadowBlur = 10;
+        ctx.fillStyle = visual.primary;
+        ctx.fill();
+
+        // Inner bright bead center
+        ctx.beginPath();
+        ctx.arc(px, py, radius * 0.55, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
         ctx.fill();
       }
     }
@@ -178,18 +182,17 @@ export class CanvasRenderer {
     if (traj.targetCell) {
       const ghostPos = this.grid.gridToWorld(traj.targetCell.row, traj.targetCell.col);
       const ghostBubble: Bubble = {
-        id: 'ghost',
+        id: "ghost",
         color: currentColor,
         row: traj.targetCell.row,
         col: traj.targetCell.col
       };
 
-      ctx.shadowBlur = 0;
       this.drawBubble(ghostPos.x, ghostPos.y, ghostBubble, 0.45, 0.95);
 
       ctx.beginPath();
       ctx.arc(ghostPos.x, ghostPos.y, this.grid.radius, 0, Math.PI * 2);
-      ctx.strokeStyle = visual.light;
+      ctx.strokeStyle = "#ffd600";
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 4]);
       ctx.stroke();
@@ -199,7 +202,7 @@ export class CanvasRenderer {
     ctx.restore();
   }
 
-  // Option 1: Minimalist Frosted Crystal Pedestal, Sleek Directional Arrow & Pearl Drop Indicators
+  // 90s Retro Arcade Mechanical Arrow Turret, Feeder Pod & Golden Coin Foul Indicators
   drawShooter(shooter: CannonShooter, foulsLeft: number = 5, maxFouls: number = 5) {
     const ctx = this.ctx;
     const ox = shooter.origin.x;
@@ -208,74 +211,89 @@ export class CanvasRenderer {
 
     ctx.save();
 
-    // 1. Sleek Frosted Crystal Pedestal
-    // Base shadow beneath glass disc
+    // 1. Mechanical Turret Pedestal (Brass & Steel Arcade Base)
+    // Base drop shadow
     ctx.beginPath();
-    ctx.ellipse(ox, oy + 16, 46, 12, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+    ctx.ellipse(ox, oy + 16, 46, 13, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
     ctx.fill();
 
-    // Pedestal glass disc
+    // Turret outer brass ring
     ctx.beginPath();
-    ctx.ellipse(ox, oy + 10, 44, 12, 0, 0, Math.PI * 2);
-    const pedestalGrad = ctx.createRadialGradient(ox, oy + 8, 4, ox, oy + 10, 44);
-    pedestalGrad.addColorStop(0, "rgba(25, 35, 65, 0.75)");
-    pedestalGrad.addColorStop(0.8, "rgba(10, 15, 30, 0.9)");
-    pedestalGrad.addColorStop(1, "rgba(0, 242, 255, 0.35)");
+    ctx.ellipse(ox, oy + 10, 44, 13, 0, 0, Math.PI * 2);
+    const pedestalGrad = ctx.createRadialGradient(ox, oy + 8, 6, ox, oy + 10, 44);
+    pedestalGrad.addColorStop(0, "#2e254e");
+    pedestalGrad.addColorStop(0.7, "#1b1633");
+    pedestalGrad.addColorStop(1, "#0e0b1d");
     ctx.fillStyle = pedestalGrad;
     ctx.fill();
-    ctx.lineWidth = 1.6;
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.6)";
-    ctx.shadowColor = "#00f2ff";
-    ctx.shadowBlur = 8;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
 
-    // Inner delicate glass bevel rim
+    // Golden brass bezel rim
+    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = "#ffd600";
+    ctx.stroke();
+
+    // Mechanical rivets around pedestal rim
+    for (let i = 0; i < 8; i++) {
+      const a = (i * Math.PI) / 4;
+      const rx = ox + Math.cos(a) * 38;
+      const ry = oy + 10 + Math.sin(a) * 10;
+      ctx.beginPath();
+      ctx.arc(rx, ry, 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffd600";
+      ctx.fill();
+    }
+
+    // Inner steel bearing disc
     ctx.beginPath();
-    ctx.ellipse(ox, oy + 7, 34, 9, 0, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+    ctx.ellipse(ox, oy + 8, 30, 9, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "#2b2347";
+    ctx.fill();
     ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255, 214, 0, 0.35)";
     ctx.stroke();
 
-    // 2. Sleek Directional Aiming Arrow (Rotates with cannon angle)
+    // 2. Chunky 90s Arcade Mechanical Pointer Arrow (Rotates with cannon angle)
     ctx.save();
     ctx.translate(ox, oy);
     ctx.rotate(-angle + Math.PI / 2);
 
-    // Modern glowing tapered arrow
+    // Classic arcade arrow pointer shape
     ctx.beginPath();
-    ctx.moveTo(0, -62);           // Sharp tip
-    ctx.lineTo(7.5, -48);         // Right wing
-    ctx.lineTo(2.2, -49.5);       // Right inner notch
-    ctx.lineTo(1.8, -25);         // Right shaft bottom
-    ctx.lineTo(-1.8, -25);        // Left shaft bottom
-    ctx.lineTo(-2.2, -49.5);      // Left inner notch
-    ctx.lineTo(-7.5, -48);        // Left wing
+    ctx.moveTo(0, -64);         // Sharp arrowhead tip
+    ctx.lineTo(10, -48);        // Right wing outer
+    ctx.lineTo(4, -49);         // Right wing inner notch
+    ctx.lineTo(3.2, -24);       // Right shaft
+    ctx.lineTo(-3.2, -24);      // Left shaft
+    ctx.lineTo(-4, -49);        // Left wing inner notch
+    ctx.lineTo(-10, -48);       // Left wing outer
     ctx.closePath();
 
-    const arrowGrad = ctx.createLinearGradient(0, -25, 0, -62);
-    arrowGrad.addColorStop(0, "rgba(0, 242, 255, 0.35)");
-    arrowGrad.addColorStop(0.65, "#00f2ff");
-    arrowGrad.addColorStop(1, "#ffffff");
+    // Warm golden-amber gradient for mechanical arrow
+    const arrowGrad = ctx.createLinearGradient(0, -24, 0, -64);
+    arrowGrad.addColorStop(0, "#ff9100");
+    arrowGrad.addColorStop(0.65, "#ffd600");
+    arrowGrad.addColorStop(1, "#fff9c4");
 
     ctx.fillStyle = arrowGrad;
-    ctx.shadowColor = "#00f2ff";
-    ctx.shadowBlur = 10;
     ctx.fill();
-    ctx.shadowBlur = 0;
 
-    // Crisp center spine highlight
+    // Crisp dark comic/arcade outline
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = "#18122b";
+    ctx.stroke();
+
+    // Arrow center spine highlight
     ctx.beginPath();
-    ctx.moveTo(0, -27);
-    ctx.lineTo(0, -59);
+    ctx.moveTo(0, -26);
+    ctx.lineTo(0, -61);
     ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1.2;
     ctx.stroke();
 
     ctx.restore();
 
-    // 3. Loaded Bubble in Pedestal Center
+    // 3. Loaded Bubble in Center of Turret
     const reloadScale = 0.5 + 0.5 * shooter.reloadRatio;
     const loadedBubble: Bubble = {
       id: "loaded",
@@ -285,28 +303,28 @@ export class CanvasRenderer {
     };
     this.drawBubble(ox, oy, loadedBubble, 1.0, reloadScale);
 
-    // 4. Next Bubble Glass Cradle (Left side)
+    // 4. Next Bubble Feeder Pod (Left side)
     const nextX = ox - 80;
     const nextY = oy + 12;
 
-    // Glass cradle saucer
+    // Feeder dish shadow & body
     ctx.beginPath();
     ctx.ellipse(nextX, nextY + 10, 26, 9, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(10, 15, 30, 0.75)";
+    ctx.fillStyle = "#1c1735";
     ctx.fill();
-    ctx.lineWidth = 1.4;
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.35)";
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = "#ffd600";
     ctx.stroke();
 
-    // Subtle inner ring
+    // Inner feeder recess
     ctx.beginPath();
     ctx.ellipse(nextX, nextY + 8, 18, 6, 0, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    ctx.fillStyle = "#120f24";
+    ctx.fill();
 
-    ctx.fillStyle = "rgba(116, 245, 255, 0.85)";
-    ctx.font = "600 9px \"Space Mono\", monospace";
+    // Label: "SONRAKİ" in warm retro font
+    ctx.fillStyle = "#ffd600";
+    ctx.font = '700 11px "Fredoka", sans-serif';
     ctx.textAlign = "center";
     ctx.fillText("SONRAKİ", nextX, nextY + 28);
 
@@ -316,9 +334,9 @@ export class CanvasRenderer {
       row: -1,
       col: -1
     };
-    this.drawBubble(nextX, nextY - 4, nextBubble, 0.9, 0.8);
+    this.drawBubble(nextX, nextY - 4, nextBubble, 0.95, 0.8);
 
-    // 5. Minimalist Pearl Drop Indicators (Centered below pedestal)
+    // 5. Golden Arcade Coin Foul Indicators (Centered below turret)
     const dotsY = oy + 44;
     const dotSpacing = 16;
     const startDotX = ox - ((maxFouls - 1) * dotSpacing) / 2;
@@ -329,26 +347,26 @@ export class CanvasRenderer {
       const isWarning = foulsLeft <= 1;
 
       ctx.beginPath();
-      ctx.arc(dotX, dotsY, 4, 0, Math.PI * 2);
-      if (isFilled) {
-        const dotGlow = isWarning ? "#ff0055" : "#00f2ff";
-        ctx.fillStyle = isWarning ? "#ff2a6d" : "#05d9e8";
-        ctx.shadowColor = dotGlow;
-        ctx.shadowBlur = 8;
-        ctx.fill();
-        ctx.shadowBlur = 0;
+      ctx.arc(dotX, dotsY, 4.5, 0, Math.PI * 2);
 
-        // Tiny pearl specular glint
+      if (isFilled) {
+        ctx.fillStyle = isWarning ? "#ff3355" : "#ffd600";
+        ctx.fill();
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = isWarning ? "#b31034" : "#ff9100";
+        ctx.stroke();
+
+        // Shiny coin reflection glint
         ctx.beginPath();
-        ctx.arc(dotX - 1.2, dotsY - 1.2, 1.2, 0, Math.PI * 2);
+        ctx.arc(dotX - 1.2, dotsY - 1.2, 1.4, 0, Math.PI * 2);
         ctx.fillStyle = "#ffffff";
         ctx.fill();
       } else {
-        // Spent foul: clean translucent glass ring
-        ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+        // Spent foul slot: dark metallic recessed socket
+        ctx.fillStyle = "#17132c";
         ctx.fill();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = "rgba(255, 214, 0, 0.2)";
         ctx.stroke();
       }
     }
