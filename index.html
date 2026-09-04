@@ -21,9 +21,13 @@
           <div class="hud-title">Snapfall</div>
           <div class="hud-high" id="highScoreText">En Yüksek: 0</div>
         </div>
-        <div class="hud-stat" style="text-align: right;">
-          <span class="hud-label" id="levelLabel">Seviye</span>
-          <span class="hud-value" id="levelValue">1</span>
+        <div class="hud-right-group">
+          <div class="hud-stat" style="text-align: right;">
+            <span class="hud-label" id="levelLabel">Seviye</span>
+            <span class="hud-value" id="levelValue">1</span>
+          </div>
+          <button class="hud-icon-btn" id="btnHudSound" title="Sesi Aç/Kapat">🔊</button>
+          <button class="hud-icon-btn" id="btnHudPause" title="Duraklat">⏸️</button>
         </div>
       </header>
 
@@ -54,7 +58,46 @@
 
             <div class="modal-actions-col">
               <button class="btn-primary" id="btnStartGame">OYUNA BAŞLA</button>
+              <button class="btn-secondary" id="btnOpenSettings">AYARLAR</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Pause Modal -->
+        <div class="modal-overlay hidden" id="pauseModal">
+          <div class="modal-card pause-card">
+            <div class="modal-icon">⏸️</div>
+            <h2 class="modal-title">DURAKLATILDI</h2>
+            <p class="modal-subtitle">Oyun durduruldu</p>
+
+            <div class="modal-actions-col">
+              <button class="btn-primary" id="btnResume">DEVAM ET</button>
+              <button class="btn-secondary" id="btnPauseSettings">AYARLAR</button>
+              <button class="btn-secondary" id="btnPauseRestart">YENİDEN BAŞLAT</button>
+              <button class="btn-secondary" id="btnPauseHome">ANA MENÜ</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal-overlay hidden" id="settingsModal">
+          <div class="modal-card settings-card">
+            <div class="modal-icon">⚙️</div>
+            <h2 class="modal-title">AYARLAR</h2>
+            <p class="modal-subtitle">Oyun Tercihleri</p>
+
+            <div class="settings-list">
+              <div class="setting-item">
+                <span class="setting-label">Ses Efektleri</span>
+                <button class="btn-toggle active" id="btnToggleSound" type="button">AÇIK</button>
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">Nişan Lazeri</span>
+                <button class="btn-toggle active" id="btnToggleLaser" type="button">AÇIK</button>
+              </div>
+            </div>
+
+            <button class="btn-primary" id="btnCloseSettings">KAPAT</button>
           </div>
         </div>
 

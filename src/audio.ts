@@ -14,6 +14,19 @@ export class SoundEffects {
     }
   }
 
+  isEnabled(): boolean {
+    return this.enabled;
+  }
+
+  setEnabled(val: boolean) {
+    this.enabled = val;
+  }
+
+  toggleEnabled(): boolean {
+    this.enabled = !this.enabled;
+    return this.enabled;
+  }
+
   playSnap() {
     if (!this.enabled) return;
     this.initCtx();

@@ -29,17 +29,39 @@ class BubbleShooterGame {
   private maxFouls: number = 5;
   private totalPopped: number = 0;
 
+  private soundEnabled: boolean = true;
+  private laserEnabled: boolean = true;
+  private settingsOpenedFrom: 'menu' | 'pause' = 'menu';
+
   // DOM Elements
   private scoreEl: HTMLElement | null;
   private highScoreEl: HTMLElement | null;
   private levelLabelEl: HTMLElement | null;
   private levelEl: HTMLElement | null;
   private coordInfoEl: HTMLElement | null;
+
+  private btnHudSound: HTMLElement | null;
+  private btnHudPause: HTMLElement | null;
+
   private mainMenuModal: HTMLElement | null;
   private menuHighScoreVal: HTMLElement | null;
   private btnModeClassic: HTMLElement | null;
   private btnModeSurvival: HTMLElement | null;
   private modeDescText: HTMLElement | null;
+  private btnStartGame: HTMLElement | null;
+  private btnOpenSettings: HTMLElement | null;
+
+  private pauseModal: HTMLElement | null;
+  private btnResume: HTMLElement | null;
+  private btnPauseSettings: HTMLElement | null;
+  private btnPauseRestart: HTMLElement | null;
+  private btnPauseHome: HTMLElement | null;
+
+  private settingsModal: HTMLElement | null;
+  private btnToggleSound: HTMLElement | null;
+  private btnToggleLaser: HTMLElement | null;
+  private btnCloseSettings: HTMLElement | null;
+
   private gameOverModal: HTMLElement | null;
   private victoryModal: HTMLElement | null;
   private goScoreEl: HTMLElement | null;
@@ -58,11 +80,27 @@ class BubbleShooterGame {
     this.levelEl = document.getElementById('levelValue');
     this.coordInfoEl = document.getElementById('coordInfo');
 
+    this.btnHudSound = document.getElementById('btnHudSound');
+    this.btnHudPause = document.getElementById('btnHudPause');
+
     this.mainMenuModal = document.getElementById('mainMenuModal');
     this.menuHighScoreVal = document.getElementById('menuHighScoreVal');
     this.btnModeClassic = document.getElementById('btnModeClassic');
     this.btnModeSurvival = document.getElementById('btnModeSurvival');
     this.modeDescText = document.getElementById('modeDescText');
+    this.btnStartGame = document.getElementById('btnStartGame');
+    this.btnOpenSettings = document.getElementById('btnOpenSettings');
+
+    this.pauseModal = document.getElementById('pauseModal');
+    this.btnResume = document.getElementById('btnResume');
+    this.btnPauseSettings = document.getElementById('btnPauseSettings');
+    this.btnPauseRestart = document.getElementById('btnPauseRestart');
+    this.btnPauseHome = document.getElementById('btnPauseHome');
+
+    this.settingsModal = document.getElementById('settingsModal');
+    this.btnToggleSound = document.getElementById('btnToggleSound');
+    this.btnToggleLaser = document.getElementById('btnToggleLaser');
+    this.btnCloseSettings = document.getElementById('btnCloseSettings');
 
     this.gameOverModal = document.getElementById('gameOverModal');
     this.victoryModal = document.getElementById('victoryModal');
@@ -85,6 +123,7 @@ class BubbleShooterGame {
     this.setupInputs();
     this.setupModalButtons();
     this.setupModeSelector();
+    this.setupControlButtons();
 
     if (this.coordInfoEl) {
       this.coordInfoEl.textContent = 'Snapfall Arcade: Başlamak için OYUNA BAŞLA butonuna dokunun';
@@ -112,6 +151,57 @@ class BubbleShooterGame {
     } else {
       this.setMode('classic');
     }
+
+    const savedSound = localStorage.getItem('snapfall_sound');
+    if (savedSound !== null) {
+      this.soundEnabled = savedSound === 'true';
+    }
+    this.audio.setEnabled(this.soundEnabled);
+    this.updateSoundDisplay();
+
+    const savedLaser = localStorage.getItem('snapfall_laser');
+    if (savedLaser !== null) {
+      this.laserEnabled = savedLaser === 'true';
+    }
+    this.updateLaserDisplay();
+  }
+
+  private updateSoundDisplay() {
+    if (this.btnHudSound) {
+      this.btnHudSound.textContent = this.soundEnabled ? '🔊' : '🔇';
+    }
+    if (this.btnToggleSound) {
+      this.btnToggleSound.textContent = this.soundEnabled ? 'AÇIK' : 'KAPALI';
+      if (this.soundEnabled) {
+        this.btnToggleSound.classList.add('active');
+      } else {
+        this.btnToggleSound.classList.remove('active');
+      }
+    }
+  }
+
+  private toggleSound() {
+    this.soundEnabled = !this.soundEnabled;
+    this.audio.setEnabled(this.soundEnabled);
+    localStorage.setItem('snapfall_sound', this.soundEnabled.toString());
+    this.updateSoundDisplay();
+  }
+
+  private updateLaserDisplay() {
+    if (this.btnToggleLaser) {
+      this.btnToggleLaser.textContent = this.laserEnabled ? 'AÇIK' : 'KAPALI';
+      if (this.laserEnabled) {
+        this.btnToggleLaser.classList.add('active');
+      } else {
+        this.btnToggleLaser.classList.remove('active');
+      }
+    }
+  }
+
+  private toggleLaser() {
+    this.laserEnabled = !this.laserEnabled;
+    localStorage.setItem('snapfall_laser', this.laserEnabled.toString());
+    this.updateLaserDisplay();
   }
 
   private setMode(newMode: GameMode) {
@@ -267,6 +357,12 @@ class BubbleShooterGame {
     window.addEventListener('keydown', (e) => {
       if (this.state === 'playing' && e.code === 'Space') {
         this.shooter.swapColors();
+      } else if (e.code === 'KeyP' || e.code === 'Escape') {
+        if (this.state === 'playing') {
+          this.pauseGame();
+        } else if (this.state === 'paused') {
+          this.resumeGame();
+        }
       }
     });
   }
@@ -281,13 +377,56 @@ class BubbleShooterGame {
     });
   }
 
+  private setupControlButtons() {
+    this.btnHudSound?.addEventListener('click', () => {
+      this.toggleSound();
+    });
+
+    this.btnHudPause?.addEventListener('click', () => {
+      if (this.state === 'playing') {
+        this.pauseGame();
+      }
+    });
+
+    this.btnResume?.addEventListener('click', () => {
+      this.resumeGame();
+    });
+
+    this.btnPauseRestart?.addEventListener('click', () => {
+      this.resumeGame();
+      this.restartGame();
+    });
+
+    this.btnPauseHome?.addEventListener('click', () => {
+      if (this.pauseModal) this.pauseModal.classList.add('hidden');
+      this.returnToMainMenu();
+    });
+
+    this.btnOpenSettings?.addEventListener('click', () => {
+      this.openSettings('menu');
+    });
+
+    this.btnPauseSettings?.addEventListener('click', () => {
+      this.openSettings('pause');
+    });
+
+    this.btnToggleSound?.addEventListener('click', () => {
+      this.toggleSound();
+    });
+
+    this.btnToggleLaser?.addEventListener('click', () => {
+      this.toggleLaser();
+    });
+
+    this.btnCloseSettings?.addEventListener('click', () => {
+      this.closeSettings();
+    });
+  }
+
   private setupModalButtons() {
-    const btnStartGame = document.getElementById('btnStartGame');
-    if (btnStartGame) {
-      btnStartGame.addEventListener('click', () => {
-        this.startGameFromMenu();
-      });
-    }
+    this.btnStartGame?.addEventListener('click', () => {
+      this.startGameFromMenu();
+    });
 
     const btnRestart = document.getElementById('btnRestart');
     if (btnRestart) {
@@ -318,6 +457,40 @@ class BubbleShooterGame {
     }
   }
 
+  private pauseGame() {
+    if (this.state !== 'playing') return;
+    this.state = 'paused';
+    if (this.pauseModal) this.pauseModal.classList.remove('hidden');
+    if (this.coordInfoEl) {
+      this.coordInfoEl.textContent = 'Oyun Duraklatıldı';
+    }
+  }
+
+  private resumeGame() {
+    if (this.state !== 'paused') return;
+    if (this.pauseModal) this.pauseModal.classList.add('hidden');
+    this.state = 'playing';
+    if (this.coordInfoEl) {
+      this.coordInfoEl.textContent = 'Nişan almak için dokunun veya sürükleyin';
+    }
+  }
+
+  private openSettings(from: 'menu' | 'pause') {
+    this.settingsOpenedFrom = from;
+    if (from === 'menu' && this.mainMenuModal) this.mainMenuModal.classList.add('hidden');
+    if (from === 'pause' && this.pauseModal) this.pauseModal.classList.add('hidden');
+    if (this.settingsModal) this.settingsModal.classList.remove('hidden');
+  }
+
+  private closeSettings() {
+    if (this.settingsModal) this.settingsModal.classList.add('hidden');
+    if (this.settingsOpenedFrom === 'menu') {
+      if (this.mainMenuModal) this.mainMenuModal.classList.remove('hidden');
+    } else {
+      if (this.pauseModal) this.pauseModal.classList.remove('hidden');
+    }
+  }
+
   private startGameFromMenu() {
     if (this.mainMenuModal) this.mainMenuModal.classList.add('hidden');
     this.restartGame();
@@ -330,6 +503,8 @@ class BubbleShooterGame {
   private returnToMainMenu() {
     if (this.gameOverModal) this.gameOverModal.classList.add('hidden');
     if (this.victoryModal) this.victoryModal.classList.add('hidden');
+    if (this.pauseModal) this.pauseModal.classList.add('hidden');
+    if (this.settingsModal) this.settingsModal.classList.add('hidden');
     if (this.mainMenuModal) this.mainMenuModal.classList.remove('hidden');
     this.state = 'menu';
     this.loadSavedSettings();
@@ -362,7 +537,6 @@ class BubbleShooterGame {
   }
 
   private replenishSurvivalRow() {
-    // In survival mode, when bubbles are depleted, add fresh bubbles to top rows
     const colors = [
       BubbleColor.RED,
       BubbleColor.BLUE,
@@ -450,7 +624,6 @@ class BubbleShooterGame {
           return;
         }
       } else {
-        // Survival mode: if bubbles are low, replenish top rows
         if (this.countTotalBubbles() < 18) {
           this.replenishSurvivalRow();
         }
@@ -531,6 +704,8 @@ class BubbleShooterGame {
   private restartGame() {
     if (this.gameOverModal) this.gameOverModal.classList.add('hidden');
     if (this.victoryModal) this.victoryModal.classList.add('hidden');
+    if (this.pauseModal) this.pauseModal.classList.add('hidden');
+    if (this.settingsModal) this.settingsModal.classList.add('hidden');
     if (this.mainMenuModal) this.mainMenuModal.classList.add('hidden');
     this.score = 0;
     this.totalPopped = 0;
@@ -583,8 +758,8 @@ class BubbleShooterGame {
     this.renderer.drawBoundaries(dangerActive);
     this.renderer.drawGrid(this.matrix);
 
-    // Trajectory Line (only when actively playing)
-    if (this.state === 'playing' && this.physics.currentProjectile === null && (this.shooter.aiming || this.isTouching)) {
+    // Trajectory Line (only when laser enabled and playing)
+    if (this.laserEnabled && this.state === 'playing' && this.physics.currentProjectile === null && (this.shooter.aiming || this.isTouching)) {
       const traj = this.trajectory.calculate(
         this.shooter.origin,
         this.shooter.angle,
