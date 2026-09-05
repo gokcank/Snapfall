@@ -169,7 +169,11 @@ class BubbleShooterGame {
 
   private updateSoundDisplay() {
     if (this.btnHudSound) {
-      this.btnHudSound.textContent = this.soundEnabled ? '🔊' : '🔇';
+      if (this.soundEnabled) {
+        this.btnHudSound.innerHTML = `<svg class="arcade-hud-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" fill-opacity="0.3"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M19 5a9.5 9.5 0 0 1 0 14"></path></svg>`;
+      } else {
+        this.btnHudSound.innerHTML = `<svg class="arcade-hud-svg muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" fill-opacity="0.3"></polygon><line x1="22" y1="9" x2="16" y2="15"></line><line x1="16" y1="9" x2="22" y2="15"></line></svg>`;
+      }
     }
     if (this.btnToggleSound) {
       this.btnToggleSound.textContent = this.soundEnabled ? 'AÇIK' : 'KAPALI';

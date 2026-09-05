@@ -18,12 +18,14 @@
       <div class="game-container">
         <!-- Top Marquee Hood / Cabinet Canopy -->
         <div class="arcade-marquee-header">
-          <div class="marquee-sign">
-            <span class="marquee-logo-badge">NEO•GEO</span>
-            <span class="marquee-title-text">SNAPFALL '96</span>
+          <div class="arcade-speaker-cluster left">
+            <span></span><span></span><span></span>
           </div>
-          <div class="arcade-speaker-cluster">
-            <span></span><span></span><span></span><span></span>
+          <div class="marquee-sign">
+            <span class="marquee-title-text">SNAPFALL</span>
+          </div>
+          <div class="arcade-speaker-cluster right">
+            <span></span><span></span><span></span>
           </div>
         </div>
 
@@ -41,8 +43,19 @@
               <span class="hud-label" id="levelLabel">Seviye</span>
               <span class="hud-value" id="levelValue">1</span>
             </div>
-            <button class="hud-icon-btn" id="btnHudSound" title="Sesi Aç/Kapat">🔊</button>
-            <button class="hud-icon-btn" id="btnHudPause" title="Duraklat">⏸️</button>
+            <button class="hud-icon-btn" id="btnHudSound" title="Sesi Aç/Kapat">
+              <svg class="arcade-hud-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" fill-opacity="0.3"></polygon>
+                <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                <path d="M19 5a9.5 9.5 0 0 1 0 14"></path>
+              </svg>
+            </button>
+            <button class="hud-icon-btn" id="btnHudPause" title="Duraklat">
+              <svg class="arcade-hud-svg" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="5.5" y="4" width="4" height="16" rx="1.5"></rect>
+                <rect x="14.5" y="4" width="4" height="16" rx="1.5"></rect>
+              </svg>
+            </button>
           </div>
         </header>
 
@@ -56,7 +69,18 @@
         <!-- Main Menu Modal -->
         <div class="modal-overlay" id="mainMenuModal">
           <div class="modal-card menu-card">
-            <div class="menu-icon">🎯</div>
+            <div class="menu-icon">
+              <svg class="arcade-modal-svg target-svg" viewBox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="20" stroke="#ffd600" stroke-width="3" fill="#1d163a"></circle>
+                <circle cx="24" cy="24" r="14" stroke="#ff3355" stroke-width="2.5" fill="#2d1d44"></circle>
+                <circle cx="24" cy="24" r="7" stroke="#ffd600" stroke-width="2" fill="#ffd600"></circle>
+                <circle cx="24" cy="24" r="2.5" fill="#ff1744"></circle>
+                <line x1="24" y1="1" x2="24" y2="10" stroke="#ffd600" stroke-width="3" stroke-linecap="round"></line>
+                <line x1="24" y1="38" x2="24" y2="47" stroke="#ffd600" stroke-width="3" stroke-linecap="round"></line>
+                <line x1="1" y1="24" x2="10" y2="24" stroke="#ffd600" stroke-width="3" stroke-linecap="round"></line>
+                <line x1="38" y1="24" x2="47" y2="24" stroke="#ffd600" stroke-width="3" stroke-linecap="round"></line>
+              </svg>
+            </div>
             <h1 class="menu-title">SNAPFALL</h1>
             <p class="menu-subtitle">Arcade Bubble Shooter</p>
             
@@ -85,7 +109,14 @@
         <!-- Pause Modal -->
         <div class="modal-overlay hidden" id="pauseModal">
           <div class="modal-card pause-card">
-            <div class="modal-icon">⏸️</div>
+            <div class="modal-icon">
+              <svg class="arcade-modal-svg pause-svg" viewBox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="21" fill="#1b1535" stroke="#ffd600" stroke-width="3"></circle>
+                <circle cx="24" cy="24" r="16" fill="#261e4a"></circle>
+                <rect x="16" y="14" width="5" height="20" rx="2" fill="#ffd600"></rect>
+                <rect x="27" y="14" width="5" height="20" rx="2" fill="#ffd600"></rect>
+              </svg>
+            </div>
             <h2 class="modal-title">DURAKLATILDI</h2>
             <p class="modal-subtitle">Oyun durduruldu</p>
 
@@ -101,7 +132,13 @@
         <!-- Settings Modal -->
         <div class="modal-overlay hidden" id="settingsModal">
           <div class="modal-card settings-card">
-            <div class="modal-icon">⚙️</div>
+            <div class="modal-icon">
+              <svg class="arcade-modal-svg gear-svg" viewBox="0 0 48 48" fill="none">
+                <path d="M24 6 C25.5 6 26.5 8 26.5 9.5 C28.5 10 30.3 11 31.8 12.3 C33 11.5 35 11 36 12 C37 13 36.5 15 35.7 16.2 C37 17.7 38 19.5 38.5 21.5 C40 21.5 42 22.5 42 24 C42 25.5 40 26.5 38.5 26.5 C38 28.5 37 30.3 35.7 31.8 C36.5 33 37 35 36 36 C35 37 33 36.5 31.8 35.7 C30.3 37 28.5 38 26.5 38.5 C26.5 40 25.5 42 24 42 C22.5 42 21.5 40 21.5 38.5 C19.5 38 17.7 37 16.2 35.7 C15 36.5 13 37 12 36 C11 35 11.5 33 12.3 31.8 C11 30.3 10 28.5 9.5 26.5 C8 26.5 6 25.5 6 24 C6 22.5 8 21.5 9.5 21.5 C10 19.5 11 17.7 12.3 16.2 C11.5 15 11 13 12 12 C13 11 15 11.5 16.2 12.3 C17.7 11 19.5 10 21.5 9.5 C21.5 8 22.5 6 24 6 Z" fill="#ffd600" stroke="#b38600" stroke-width="2"></path>
+                <circle cx="24" cy="24" r="8" fill="#16122c" stroke="#b38600" stroke-width="2.5"></circle>
+                <circle cx="24" cy="24" r="3.5" fill="#ffd600"></circle>
+              </svg>
+            </div>
             <h2 class="modal-title">AYARLAR</h2>
             <p class="modal-subtitle">Oyun Tercihleri</p>
 
@@ -123,7 +160,13 @@
         <!-- Game Over Modal -->
         <div class="modal-overlay hidden" id="gameOverModal">
           <div class="modal-card gameover-card">
-            <div class="modal-icon">💥</div>
+            <div class="modal-icon">
+              <svg class="arcade-modal-svg gameover-svg" viewBox="0 0 48 48" fill="none">
+                <polygon points="24 3 28 15 41 11 35 23 46 29 34 35 37 47 25 40 18 47 19 35 6 31 16 23 9 13 22 16" fill="#ff3355" stroke="#ffebee" stroke-width="2"></polygon>
+                <polygon points="24 9 27 18 36 15 31 24 39 28 30 32 32 41 24 36 19 41 20 32 10 29 18 24 13 16 22 18" fill="#ffd600"></polygon>
+                <circle cx="24" cy="25" r="5" fill="#b71c1c"></circle>
+              </svg>
+            </div>
             <h2 class="modal-title">OYUN BİTTİ</h2>
             <p class="modal-subtitle">Baloncuklar tehlike çizgisini aştı!</p>
             
@@ -148,7 +191,17 @@
         <!-- Victory Modal -->
         <div class="modal-overlay hidden" id="victoryModal">
           <div class="modal-card victory-card">
-            <div class="modal-icon">🏆</div>
+            <div class="modal-icon">
+              <svg class="arcade-modal-svg victory-svg" viewBox="0 0 48 48" fill="none">
+                <path d="M14 8 H34 V22 C34 27.5 29.5 32 24 32 C18.5 32 14 27.5 14 22 Z" fill="#ffd600" stroke="#ffab00" stroke-width="2.5"></path>
+                <path d="M14 12 H8 C6.9 12 6 12.9 6 14 V17 C6 20.3 8.7 23 12 23 H14" stroke="#ffd600" stroke-width="2.5" stroke-linecap="round"></path>
+                <path d="M34 12 H40 C41.1 12 42 12.9 42 14 V17 C42 20.3 39.3 23 36 23 H34" stroke="#ffd600" stroke-width="2.5" stroke-linecap="round"></path>
+                <rect x="21" y="32" width="6" height="7" fill="#ffab00"></rect>
+                <path d="M13 39 H35 V43 H13 Z" fill="#b38600" stroke="#ffd600" stroke-width="1.5"></path>
+                <circle cx="24" cy="18" r="4" fill="#fff" opacity="0.6"></circle>
+                <polygon points="24 13 25.5 16.5 29 17 26.5 19.5 27 23 24 21 21 23 21.5 19.5 19 17 22.5 16.5" fill="#ff6d00"></polygon>
+              </svg>
+            </div>
             <h2 class="modal-title">TEBRİKLER!</h2>
             <p class="modal-subtitle">Tüm baloncukları temizlediniz!</p>
 
