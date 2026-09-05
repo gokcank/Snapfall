@@ -50,6 +50,9 @@ class BubbleShooterGame {
   private modeDescText: HTMLElement | null;
   private btnStartGame: HTMLElement | null;
   private btnOpenSettings: HTMLElement | null;
+  private btnOpenAbout: HTMLElement | null;
+  private aboutModal: HTMLElement | null;
+  private btnCloseAbout: HTMLElement | null;
 
   private pauseModal: HTMLElement | null;
   private btnResume: HTMLElement | null;
@@ -91,6 +94,9 @@ class BubbleShooterGame {
     this.modeDescText = document.getElementById('modeDescText');
     this.btnStartGame = document.getElementById('btnStartGame');
     this.btnOpenSettings = document.getElementById('btnOpenSettings');
+    this.btnOpenAbout = document.getElementById('btnOpenAbout');
+    this.aboutModal = document.getElementById('aboutModal');
+    this.btnCloseAbout = document.getElementById('btnCloseAbout');
 
     this.pauseModal = document.getElementById('pauseModal');
     this.btnResume = document.getElementById('btnResume');
@@ -427,6 +433,16 @@ class BubbleShooterGame {
 
     this.btnOpenSettings?.addEventListener('click', () => {
       this.openSettings('menu');
+    });
+
+    this.btnOpenAbout?.addEventListener('click', () => {
+      if (this.mainMenuModal) this.mainMenuModal.classList.add('hidden');
+      if (this.aboutModal) this.aboutModal.classList.remove('hidden');
+    });
+
+    this.btnCloseAbout?.addEventListener('click', () => {
+      if (this.aboutModal) this.aboutModal.classList.add('hidden');
+      if (this.mainMenuModal) this.mainMenuModal.classList.remove('hidden');
     });
 
     this.btnPauseSettings?.addEventListener('click', () => {

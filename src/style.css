@@ -713,6 +713,39 @@ canvas#gameCanvas {
   margin-bottom: 20px;
 }
 
+.about-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.about-link {
+  display: inline-block;
+  font-family: 'Silkscreen', 'Outfit', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #ffd600;
+  text-decoration: underline;
+  margin-bottom: 16px;
+}
+
+.about-github-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #130f24;
+  border: 1px solid #362e58;
+  color: #ffffff;
+  margin-bottom: 20px;
+  transition: none;
+}
+
 .modal-stats {
   width: 100%;
   display: grid;
