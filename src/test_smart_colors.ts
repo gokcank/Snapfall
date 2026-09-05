@@ -40,6 +40,7 @@ console.log('✓ Test 3: Low bubble count (total <= 8) yields 100% active colors
 const activeThree = [BubbleColor.RED, BubbleColor.BLUE, BubbleColor.GREEN];
 // Off-board colors are YELLOW and PURPLE
 const isOffBoard = (c: BubbleColor) => c === BubbleColor.YELLOW || c === BubbleColor.PURPLE;
+shooter.resetColors(activeThree, 25);
 
 let previousWasOffBoard = false;
 for (let i = 0; i < 1000; i++) {

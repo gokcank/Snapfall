@@ -1,7 +1,7 @@
 import { EffectsManager } from './effects';
 import { HexGrid } from './grid';
 import { CannonShooter } from './shooter';
-import { Bubble, COLOR_PALETTE, GridMatrix, Projectile, TrajectoryResult } from './types';
+import { Bubble, BubbleColor, COLOR_PALETTE, GridMatrix, Projectile, TrajectoryResult } from './types';
 
 export class CanvasRenderer {
   readonly ctx: CanvasRenderingContext2D;
@@ -58,6 +58,9 @@ export class CanvasRenderer {
     ctx.lineWidth = 1.6;
     ctx.strokeStyle = "rgba(10, 8, 20, 0.5)";
     ctx.stroke();
+
+    // 3.5. 90s Engraved Relief Arcade Emblem (Bomb, Token, Cherry, Lightning, Invader)
+    this.drawReliefEmblem(ctx, x, y, r, bubble.color);
 
     // 4. Primary Specular Glint (Signature 90s Curved Highlight)
     ctx.beginPath();
@@ -476,4 +479,160 @@ export class CanvasRenderer {
 
     ctx.restore();
   }
+
+  // --- 90s Engraved Relief Arcade Emblems on Bubbles ---
+  private drawReliefEmblem(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, color: BubbleColor) {
+    const s = r * 0.54;
+    const emblemY = cy + r * 0.05;
+
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 1.5;
+
+    // 1. Debossed Shadow (shifted slightly down/right for recessed engraved depth)
+    ctx.fillStyle = "rgba(8, 6, 18, 0.32)";
+    ctx.strokeStyle = "rgba(8, 6, 18, 0.32)";
+    this.renderEmblemShape(ctx, cx + 0.6, emblemY + 1.0, s, color);
+
+    // 2. Relief Face (semi-transparent warm white glass imprint stamp)
+    ctx.fillStyle = "rgba(255, 255, 255, 0.44)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.44)";
+    this.renderEmblemShape(ctx, cx, emblemY, s, color);
+
+    ctx.restore();
+  }
+
+  private renderEmblemShape(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number, color: BubbleColor) {
+    switch (color) {
+      case BubbleColor.RED:
+        this.drawBombEmblem(ctx, cx, cy, s);
+        break;
+      case BubbleColor.YELLOW:
+        this.drawCoinEmblem(ctx, cx, cy, s);
+        break;
+      case BubbleColor.GREEN:
+        this.drawCherryEmblem(ctx, cx, cy, s);
+        break;
+      case BubbleColor.BLUE:
+        this.drawLightningEmblem(ctx, cx, cy, s);
+        break;
+      case BubbleColor.PURPLE:
+        this.drawInvaderEmblem(ctx, cx, cy, s);
+        break;
+    }
+  }
+
+  // RED: 💣 Classic Arcade Bomb
+  private drawBombEmblem(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+    // Bomb spherical body
+    ctx.beginPath();
+    ctx.arc(cx, cy + s * 0.12, s * 0.54, 0, Math.PI * 2);
+    ctx.fill();
+    // Neck collar
+    ctx.fillRect(cx - s * 0.16, cy - s * 0.52, s * 0.32, s * 0.18);
+    // Wick
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - s * 0.5);
+    ctx.quadraticCurveTo(cx + s * 0.3, cy - s * 0.75, cx + s * 0.38, cy - s * 0.62);
+    ctx.stroke();
+    // Spark starlet
+    ctx.beginPath();
+    ctx.arc(cx + s * 0.42, cy - s * 0.64, s * 0.11, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // YELLOW: 🪙 Arcade Token Coin & Star
+  private drawCoinEmblem(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+    // Outer coin rim
+    ctx.beginPath();
+    ctx.arc(cx, cy, s * 0.68, 0, Math.PI * 2);
+    ctx.stroke();
+    // 5-pointed coin star
+    ctx.beginPath();
+    const spikes = 5;
+    const outerRadius = s * 0.44;
+    const innerRadius = s * 0.20;
+    let rot = (Math.PI / 2) * 3;
+    const step = Math.PI / spikes;
+    ctx.moveTo(cx, cy - outerRadius);
+    for (let i = 0; i < spikes; i++) {
+      let x = cx + Math.cos(rot) * outerRadius;
+      let y = cy + Math.sin(rot) * outerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+      x = cx + Math.cos(rot) * innerRadius;
+      y = cy + Math.sin(rot) * innerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // GREEN: 🍒 Retro Coin-Op Cherries
+  private drawCherryEmblem(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+    // Left cherry
+    ctx.beginPath();
+    ctx.arc(cx - s * 0.28, cy + s * 0.24, s * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+    // Right cherry
+    ctx.beginPath();
+    ctx.arc(cx + s * 0.28, cy + s * 0.30, s * 0.30, 0, Math.PI * 2);
+    ctx.fill();
+    // Joined stems
+    ctx.beginPath();
+    ctx.moveTo(cx - s * 0.28, cy + s * 0.06);
+    ctx.quadraticCurveTo(cx - s * 0.16, cy - s * 0.46, cx + s * 0.04, cy - s * 0.58);
+    ctx.moveTo(cx + s * 0.28, cy + s * 0.12);
+    ctx.quadraticCurveTo(cx + s * 0.14, cy - s * 0.42, cx + s * 0.04, cy - s * 0.58);
+    ctx.stroke();
+    // Top leaf
+    ctx.beginPath();
+    ctx.ellipse(cx + s * 0.22, cy - s * 0.58, s * 0.24, s * 0.10, Math.PI / 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // BLUE: ⚡ High-Voltage Lightning Bolt
+  private drawLightningEmblem(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+    ctx.beginPath();
+    ctx.moveTo(cx + s * 0.10, cy - s * 0.68);
+    ctx.lineTo(cx - s * 0.38, cy + s * 0.04);
+    ctx.lineTo(cx - s * 0.04, cy + s * 0.04);
+    ctx.lineTo(cx - s * 0.20, cy + s * 0.72);
+    ctx.lineTo(cx + s * 0.38, cy - s * 0.04);
+    ctx.lineTo(cx + s * 0.04, cy - s * 0.04);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // PURPLE: 👾 16-Bit Space Invader Alien
+  private drawInvaderEmblem(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+    const p = s * 0.12;
+    ctx.save();
+    // Antennae
+    ctx.fillRect(cx - p * 3, cy - p * 3.5, p, p);
+    ctx.fillRect(cx + p * 2, cy - p * 3.5, p, p);
+    ctx.fillRect(cx - p * 2, cy - p * 2.5, p, p);
+    ctx.fillRect(cx + p * 1, cy - p * 2.5, p, p);
+    // Head & brow
+    ctx.fillRect(cx - p * 3, cy - p * 1.5, p * 6, p);
+    // Face rows
+    ctx.fillRect(cx - p * 4, cy - p * 0.5, p * 8, p);
+    ctx.fillRect(cx - p * 4, cy + p * 0.5, p * 8, p);
+    // Center mouth row
+    ctx.fillRect(cx - p * 2, cy + p * 1.5, p * 4, p);
+    // Outer claws
+    ctx.fillRect(cx - p * 4, cy + p * 1.5, p, p * 2);
+    ctx.fillRect(cx + p * 3, cy + p * 1.5, p, p * 2);
+    ctx.fillRect(cx - p * 2, cy + p * 2.5, p, p);
+    ctx.fillRect(cx + p * 1, cy + p * 2.5, p, p);
+
+    // Eye cutouts
+    ctx.fillStyle = "rgba(10, 8, 20, 0.45)";
+    ctx.fillRect(cx - p * 2.5, cy - p * 0.5, p, p);
+    ctx.fillRect(cx + p * 1.5, cy - p * 0.5, p, p);
+    ctx.restore();
+  }
+
 }
