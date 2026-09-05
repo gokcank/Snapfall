@@ -6,19 +6,29 @@ import { PhysicsEngine } from './physics';
 import { CanvasRenderer } from './renderer';
 import { CannonShooter } from './shooter';
 import { TrajectoryCalculator } from './trajectory';
-import { BubbleColor, GameMode, GameState, GridMatrix } from './types';
+import { BubbleColor, GameMode, GameState, GridMatrix, LeaderboardEntry } from './types';
 
 const VICTORY_BONUS = 1000;
 const TIME_ATTACK_DURATION = 90;
 const PUZZLE_ROW_SCHEDULE = [3, 4, 5, 6];
 const PUZZLE_SHOT_MARGIN = 6;
 const HIGH_SCORE_KEY_PREFIX = 'snapfall_highscore_';
+const LEADERBOARD_KEY_PREFIX = 'snapfall_leaderboard_';
+const LEADERBOARD_SIZE = 5;
+const NAME_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
 const MODE_DESCRIPTIONS: Record<GameMode, string> = {
   classic: 'Bölüm bazlı: Tüm balonları temizleyerek seviyeleri aşın.',
   survival: 'Sonsuz mod: Balonlar sürekli yenilenir, rekor skoru hedefleyin!',
   timeattack: 'Zamana karşı: 90 saniyede mümkün olduğunca çok baloncuk patlatın.',
   puzzle: 'Bulmaca: Sınırlı atışla tahtayı tamamen temizlemeye çalışın.'
+};
+
+const MODE_LABELS: Record<GameMode, string> = {
+  classic: 'Klasik',
+  survival: 'Sonsuz',
+  timeattack: 'Zamana Karşı',
+  puzzle: 'Bulmaca'
 };
 
 class BubbleShooterGame {
@@ -44,6 +54,9 @@ class BubbleShooterGame {
   private timeRemaining: number = 0;
   private shotsRemaining: number = 0;
   private modeButtons: { mode: GameMode; el: HTMLElement | null }[] = [];
+  private leaderboards: Record<GameMode, LeaderboardEntry[]> = { classic: [], survival: [], timeattack: [], puzzle: [] };
+  private nameEntryLetters: number[] = [0, 0, 0];
+  private pendingGameOverReason: 'danger' | 'timeup' | 'noshots' = 'danger';
 
   private soundEnabled: boolean = true;
   private laserEnabled: boolean = true;
@@ -75,6 +88,15 @@ class BubbleShooterGame {
   private scoringModal: HTMLElement | null;
   private btnCloseScoring: HTMLElement | null;
   private vicBonusVal: HTMLElement | null;
+  private btnOpenLeaderboard: HTMLElement | null;
+  private leaderboardModal: HTMLElement | null;
+  private btnCloseLeaderboard: HTMLElement | null;
+  private leaderboardModeLabelEl: HTMLElement | null;
+  private leaderboardListEl: HTMLElement | null;
+  private nameEntryModal: HTMLElement | null;
+  private nameEntryScoreVal: HTMLElement | null;
+  private nameLetterEls: (HTMLElement | null)[];
+  private btnSaveName: HTMLElement | null;
 
   private pauseModal: HTMLElement | null;
   private btnResume: HTMLElement | null;
@@ -133,6 +155,19 @@ class BubbleShooterGame {
     this.scoringModal = document.getElementById('scoringModal');
     this.btnCloseScoring = document.getElementById('btnCloseScoring');
     this.vicBonusVal = document.getElementById('vicBonusVal');
+    this.btnOpenLeaderboard = document.getElementById('btnOpenLeaderboard');
+    this.leaderboardModal = document.getElementById('leaderboardModal');
+    this.btnCloseLeaderboard = document.getElementById('btnCloseLeaderboard');
+    this.leaderboardModeLabelEl = document.getElementById('leaderboardModeLabel');
+    this.leaderboardListEl = document.getElementById('leaderboardList');
+    this.nameEntryModal = document.getElementById('nameEntryModal');
+    this.nameEntryScoreVal = document.getElementById('nameEntryScoreVal');
+    this.nameLetterEls = [
+      document.getElementById('nameLetter0'),
+      document.getElementById('nameLetter1'),
+      document.getElementById('nameLetter2')
+    ];
+    this.btnSaveName = document.getElementById('btnSaveName');
 
     const scoringVictoryBonusEl = document.getElementById('scoringVictoryBonus');
     if (scoringVictoryBonusEl) scoringVictoryBonusEl.textContent = `+${VICTORY_BONUS}`;
@@ -186,6 +221,13 @@ class BubbleShooterGame {
     (['classic', 'survival', 'timeattack', 'puzzle'] as GameMode[]).forEach((m) => {
       const saved = localStorage.getItem(HIGH_SCORE_KEY_PREFIX + m);
       this.highScores[m] = saved ? parseInt(saved, 10) || 0 : 0;
+
+      const savedBoard = localStorage.getItem(LEADERBOARD_KEY_PREFIX + m);
+      try {
+        this.leaderboards[m] = savedBoard ? JSON.parse(savedBoard) : [];
+      } catch {
+        this.leaderboards[m] = [];
+      }
     });
 
     const savedMode = localStorage.getItem('snapfall_mode') as GameMode | null;
@@ -311,6 +353,54 @@ class BubbleShooterGame {
       localStorage.setItem(HIGH_SCORE_KEY_PREFIX + this.mode, this.score.toString());
       this.updateHighScoreDisplays();
     }
+  }
+
+  private qualifiesForLeaderboard(mode: GameMode, score: number): boolean {
+    const list = this.leaderboards[mode];
+    if (list.length < LEADERBOARD_SIZE) return true;
+    return score > list[list.length - 1].score;
+  }
+
+  private addLeaderboardEntry(mode: GameMode, name: string, score: number) {
+    const list = [...this.leaderboards[mode], { name, score }];
+    list.sort((a, b) => b.score - a.score);
+    this.leaderboards[mode] = list.slice(0, LEADERBOARD_SIZE);
+    localStorage.setItem(LEADERBOARD_KEY_PREFIX + mode, JSON.stringify(this.leaderboards[mode]));
+  }
+
+  private renderLeaderboard() {
+    if (this.leaderboardModeLabelEl) this.leaderboardModeLabelEl.textContent = MODE_LABELS[this.mode];
+    if (!this.leaderboardListEl) return;
+
+    const list = this.leaderboards[this.mode];
+    if (list.length === 0) {
+      this.leaderboardListEl.innerHTML = '<li class="leaderboard-empty">Henüz kayıt yok</li>';
+      return;
+    }
+
+    this.leaderboardListEl.innerHTML = list
+      .map((entry, i) => `<li><span class="leaderboard-rank">${i + 1}</span><span class="leaderboard-name">${entry.name}</span><span class="leaderboard-score">${entry.score}</span></li>`)
+      .join('');
+  }
+
+  private updateNameEntryDisplay() {
+    this.nameLetterEls.forEach((el, i) => {
+      if (el) el.textContent = NAME_CHARS[this.nameEntryLetters[i]];
+    });
+  }
+
+  private showNameEntry() {
+    this.nameEntryLetters = [0, 0, 0];
+    this.updateNameEntryDisplay();
+    if (this.nameEntryScoreVal) this.nameEntryScoreVal.textContent = this.score.toString();
+    if (this.nameEntryModal) this.nameEntryModal.classList.remove('hidden');
+  }
+
+  private saveNameEntry() {
+    const name = this.nameEntryLetters.map((i) => NAME_CHARS[i]).join('');
+    this.addLeaderboardEntry(this.mode, name, this.score);
+    if (this.nameEntryModal) this.nameEntryModal.classList.add('hidden');
+    this.showGameOverModal(this.pendingGameOverReason);
   }
 
   private fillProceduralRows(colors: BubbleColor[], rows: number) {
@@ -543,6 +633,34 @@ class BubbleShooterGame {
       if (this.mainMenuModal) this.mainMenuModal.classList.remove('hidden');
     });
 
+    this.btnOpenLeaderboard?.addEventListener('click', () => {
+      if (this.mainMenuModal) this.mainMenuModal.classList.add('hidden');
+      this.renderLeaderboard();
+      if (this.leaderboardModal) this.leaderboardModal.classList.remove('hidden');
+    });
+
+    this.btnCloseLeaderboard?.addEventListener('click', () => {
+      if (this.leaderboardModal) this.leaderboardModal.classList.add('hidden');
+      if (this.mainMenuModal) this.mainMenuModal.classList.remove('hidden');
+    });
+
+    this.btnSaveName?.addEventListener('click', () => {
+      this.saveNameEntry();
+    });
+
+    document.querySelectorAll<HTMLElement>('.name-entry-arrow').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const slot = parseInt(btn.dataset.slot || '0', 10);
+        const len = NAME_CHARS.length;
+        if (btn.dataset.dir === 'up') {
+          this.nameEntryLetters[slot] = (this.nameEntryLetters[slot] + 1) % len;
+        } else {
+          this.nameEntryLetters[slot] = (this.nameEntryLetters[slot] - 1 + len) % len;
+        }
+        this.updateNameEntryDisplay();
+      });
+    });
+
     this.btnPauseSettings?.addEventListener('click', () => {
       this.openSettings('pause');
     });
@@ -688,6 +806,7 @@ class BubbleShooterGame {
     if (this.victoryModal) this.victoryModal.classList.add('hidden');
     if (this.pauseModal) this.pauseModal.classList.add('hidden');
     if (this.settingsModal) this.settingsModal.classList.add('hidden');
+    if (this.nameEntryModal) this.nameEntryModal.classList.add('hidden');
     if (this.mainMenuModal) this.mainMenuModal.classList.remove('hidden');
     this.state = 'menu';
     this.audio.stopBackgroundMusic();
@@ -907,6 +1026,18 @@ class BubbleShooterGame {
     this.audio.stopBackgroundMusic();
     this.audio.playGameOver();
 
+    if (this.goScoreEl) this.goScoreEl.textContent = this.score.toString();
+    if (this.goPoppedEl) this.goPoppedEl.textContent = this.totalPopped.toString();
+
+    if (this.score > 0 && this.qualifiesForLeaderboard(this.mode, this.score)) {
+      this.pendingGameOverReason = reason;
+      this.showNameEntry();
+    } else {
+      this.showGameOverModal(reason);
+    }
+  }
+
+  private showGameOverModal(reason: 'danger' | 'timeup' | 'noshots') {
     if (this.goTitleEl && this.goSubtitleEl) {
       if (reason === 'timeup') {
         this.goTitleEl.textContent = 'SÜRE DOLDU!';
@@ -920,8 +1051,6 @@ class BubbleShooterGame {
       }
     }
 
-    if (this.goScoreEl) this.goScoreEl.textContent = this.score.toString();
-    if (this.goPoppedEl) this.goPoppedEl.textContent = this.totalPopped.toString();
     if (this.gameOverModal) this.gameOverModal.classList.remove('hidden');
   }
 
@@ -942,6 +1071,7 @@ class BubbleShooterGame {
     if (this.victoryModal) this.victoryModal.classList.add('hidden');
     if (this.pauseModal) this.pauseModal.classList.add('hidden');
     if (this.settingsModal) this.settingsModal.classList.add('hidden');
+    if (this.nameEntryModal) this.nameEntryModal.classList.add('hidden');
     if (this.mainMenuModal) this.mainMenuModal.classList.add('hidden');
     this.score = 0;
     this.totalPopped = 0;

@@ -106,6 +106,7 @@
               <button class="btn-primary" id="btnStartGame">OYUNA BAŞLA</button>
               <button class="btn-secondary" id="btnOpenSettings">AYARLAR</button>
               <button class="btn-secondary" id="btnOpenScoring">PUANLAMA</button>
+              <button class="btn-secondary" id="btnOpenLeaderboard">EN YÜKSEKLER</button>
               <button class="btn-secondary" id="btnOpenAbout">HAKKINDA</button>
             </div>
           </div>
@@ -132,6 +133,67 @@
             <p class="about-text">Kombo çarpanı art arda yapılan eşleşmelerle artar, en fazla 5'e kadar çıkar.</p>
 
             <button class="btn-primary" id="btnCloseScoring">KAPAT</button>
+          </div>
+        </div>
+
+        <!-- Leaderboard Modal -->
+        <div class="modal-overlay hidden" id="leaderboardModal">
+          <div class="modal-card leaderboard-card">
+            <div class="modal-icon">
+              <svg class="arcade-modal-svg leaderboard-svg" viewBox="0 0 48 48" fill="none">
+                <path d="M14 8 H34 V22 C34 27.5 29.5 32 24 32 C18.5 32 14 27.5 14 22 Z" fill="#ffd600" stroke="#ffab00" stroke-width="2.5"></path>
+                <path d="M14 12 H8 C6.9 12 6 12.9 6 14 V17 C6 20.3 8.7 23 12 23 H14" stroke="#ffd600" stroke-width="2.5" stroke-linecap="round"></path>
+                <path d="M34 12 H40 C41.1 12 42 12.9 42 14 V17 C42 20.3 39.3 23 36 23 H34" stroke="#ffd600" stroke-width="2.5" stroke-linecap="round"></path>
+                <rect x="21" y="32" width="6" height="7" fill="#ffab00"></rect>
+                <path d="M13 39 H35 V43 H13 Z" fill="#b38600" stroke="#ffd600" stroke-width="1.5"></path>
+              </svg>
+            </div>
+            <h2 class="modal-title">EN YÜKSEKLER</h2>
+            <p class="modal-subtitle" id="leaderboardModeLabel">Klasik</p>
+
+            <ol class="leaderboard-list" id="leaderboardList"></ol>
+
+            <button class="btn-primary" id="btnCloseLeaderboard">KAPAT</button>
+          </div>
+        </div>
+
+        <!-- Name Entry Modal (shown when a run qualifies for the leaderboard) -->
+        <div class="modal-overlay hidden" id="nameEntryModal">
+          <div class="modal-card name-entry-card">
+            <div class="modal-icon">
+              <svg class="arcade-modal-svg name-entry-svg" viewBox="0 0 48 48" fill="none">
+                <path d="M14 8 H34 V22 C34 27.5 29.5 32 24 32 C18.5 32 14 27.5 14 22 Z" fill="#ffd600" stroke="#ffab00" stroke-width="2.5"></path>
+                <rect x="21" y="32" width="6" height="7" fill="#ffab00"></rect>
+                <path d="M13 39 H35 V43 H13 Z" fill="#b38600" stroke="#ffd600" stroke-width="1.5"></path>
+              </svg>
+            </div>
+            <h2 class="modal-title">YENİ REKOR!</h2>
+            <p class="modal-subtitle">İsminizi girin</p>
+
+            <div class="stat-box name-entry-score-box">
+              <span class="stat-box-label">Skor</span>
+              <span class="stat-box-val" id="nameEntryScoreVal">0</span>
+            </div>
+
+            <div class="name-entry-letters">
+              <div class="name-entry-slot">
+                <button class="name-entry-arrow" type="button" data-slot="0" data-dir="up">▲</button>
+                <span class="name-entry-letter" id="nameLetter0">A</span>
+                <button class="name-entry-arrow" type="button" data-slot="0" data-dir="down">▼</button>
+              </div>
+              <div class="name-entry-slot">
+                <button class="name-entry-arrow" type="button" data-slot="1" data-dir="up">▲</button>
+                <span class="name-entry-letter" id="nameLetter1">A</span>
+                <button class="name-entry-arrow" type="button" data-slot="1" data-dir="down">▼</button>
+              </div>
+              <div class="name-entry-slot">
+                <button class="name-entry-arrow" type="button" data-slot="2" data-dir="up">▲</button>
+                <span class="name-entry-letter" id="nameLetter2">A</span>
+                <button class="name-entry-arrow" type="button" data-slot="2" data-dir="down">▼</button>
+              </div>
+            </div>
+
+            <button class="btn-primary" id="btnSaveName">KAYDET</button>
           </div>
         </div>
 
