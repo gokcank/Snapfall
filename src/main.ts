@@ -188,6 +188,9 @@ class BubbleShooterGame {
   private toggleSound() {
     this.soundEnabled = !this.soundEnabled;
     this.audio.setEnabled(this.soundEnabled);
+    if (this.soundEnabled && this.state === 'playing') {
+      this.audio.playBackgroundMusic();
+    }
     localStorage.setItem('snapfall_sound', this.soundEnabled.toString());
     this.updateSoundDisplay();
   }
@@ -550,6 +553,7 @@ class BubbleShooterGame {
   private pauseGame() {
     if (this.state !== 'playing') return;
     this.state = 'paused';
+    this.audio.stopBackgroundMusic();
     if (this.pauseModal) this.pauseModal.classList.remove('hidden');
     if (this.coordInfoEl) {
       this.coordInfoEl.textContent = 'Oyun Duraklatıldı';
@@ -560,6 +564,7 @@ class BubbleShooterGame {
     if (this.state !== 'paused') return;
     if (this.pauseModal) this.pauseModal.classList.add('hidden');
     this.state = 'playing';
+    this.audio.playBackgroundMusic();
     if (this.coordInfoEl) {
       this.coordInfoEl.textContent = 'Nişan almak için dokunun veya sürükleyin';
     }
@@ -597,6 +602,7 @@ class BubbleShooterGame {
     if (this.settingsModal) this.settingsModal.classList.add('hidden');
     if (this.mainMenuModal) this.mainMenuModal.classList.remove('hidden');
     this.state = 'menu';
+    this.audio.stopBackgroundMusic();
     this.loadSavedSettings();
     if (this.coordInfoEl) {
       this.coordInfoEl.textContent = 'Snapfall Arcade: Başlamak için OYUNA BAŞLA butonuna dokunun';
@@ -799,6 +805,7 @@ class BubbleShooterGame {
 
   private triggerGameOver() {
     this.state = 'gameover';
+    this.audio.stopBackgroundMusic();
     this.audio.playGameOver();
 
     if (this.goScoreEl) this.goScoreEl.textContent = this.score.toString();
@@ -808,6 +815,7 @@ class BubbleShooterGame {
 
   private triggerVictory() {
     this.state = 'victory';
+    this.audio.stopBackgroundMusic();
     this.audio.playVictory();
 
     this.score += 1000;
@@ -830,6 +838,7 @@ class BubbleShooterGame {
     if (this.scoreEl) this.scoreEl.textContent = '0';
     this.initLevel(this.level);
     this.state = 'playing';
+    this.audio.playBackgroundMusic();
   }
 
   private advanceNextLevel() {
@@ -837,6 +846,7 @@ class BubbleShooterGame {
     this.level++;
     this.initLevel(this.level);
     this.state = 'playing';
+    this.audio.playBackgroundMusic();
   }
 
   private gameLoop = (timestamp: number) => {
