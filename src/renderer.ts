@@ -45,9 +45,11 @@ export class CanvasRenderer {
       r * 0.98
     );
     bodyGrad.addColorStop(0, visual.light);
-    bodyGrad.addColorStop(0.36, visual.primary);
-    bodyGrad.addColorStop(0.85, visual.dark);
-    bodyGrad.addColorStop(1.0, "rgba(15, 12, 28, 0.55)");
+    bodyGrad.addColorStop(0.24, visual.light);
+    bodyGrad.addColorStop(0.26, visual.primary);
+    bodyGrad.addColorStop(0.7, visual.primary);
+    bodyGrad.addColorStop(0.72, visual.dark);
+    bodyGrad.addColorStop(1.0, visual.dark);
 
     ctx.beginPath();
     ctx.arc(x, y, r * 0.96, 0, Math.PI * 2);
