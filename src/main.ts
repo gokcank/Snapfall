@@ -9,6 +9,17 @@ import { TrajectoryCalculator } from './trajectory';
 import { BubbleColor, GameMode, GameState, GridMatrix } from './types';
 
 const VICTORY_BONUS = 1000;
+const TIME_ATTACK_DURATION = 90;
+const PUZZLE_ROW_SCHEDULE = [3, 4, 5, 6];
+const PUZZLE_SHOT_MARGIN = 6;
+const HIGH_SCORE_KEY_PREFIX = 'snapfall_highscore_';
+
+const MODE_DESCRIPTIONS: Record<GameMode, string> = {
+  classic: 'Bölüm bazlı: Tüm balonları temizleyerek seviyeleri aşın.',
+  survival: 'Sonsuz mod: Balonlar sürekli yenilenir, rekor skoru hedefleyin!',
+  timeattack: 'Zamana karşı: 90 saniyede mümkün olduğunca çok baloncuk patlatın.',
+  puzzle: 'Bulmaca: Sınırlı atışla tahtayı tamamen temizlemeye çalışın.'
+};
 
 class BubbleShooterGame {
   private canvas: HTMLCanvasElement;
@@ -24,12 +35,15 @@ class BubbleShooterGame {
   private state: GameState = 'menu';
   private mode: GameMode = 'classic';
   private score: number = 0;
-  private highScore: number = 0;
+  private highScores: Record<GameMode, number> = { classic: 0, survival: 0, timeattack: 0, puzzle: 0 };
   private level: number = 1;
   private combo: number = 0;
   private foulsLeft: number = 5;
   private maxFouls: number = 5;
   private totalPopped: number = 0;
+  private timeRemaining: number = 0;
+  private shotsRemaining: number = 0;
+  private modeButtons: { mode: GameMode; el: HTMLElement | null }[] = [];
 
   private soundEnabled: boolean = true;
   private laserEnabled: boolean = true;
@@ -49,6 +63,8 @@ class BubbleShooterGame {
   private menuHighScoreVal: HTMLElement | null;
   private btnModeClassic: HTMLElement | null;
   private btnModeSurvival: HTMLElement | null;
+  private btnModeTimeAttack: HTMLElement | null;
+  private btnModePuzzle: HTMLElement | null;
   private modeDescText: HTMLElement | null;
   private btnStartGame: HTMLElement | null;
   private btnOpenSettings: HTMLElement | null;
@@ -73,6 +89,8 @@ class BubbleShooterGame {
 
   private gameOverModal: HTMLElement | null;
   private victoryModal: HTMLElement | null;
+  private goTitleEl: HTMLElement | null;
+  private goSubtitleEl: HTMLElement | null;
   private goScoreEl: HTMLElement | null;
   private goPoppedEl: HTMLElement | null;
   private vicScoreEl: HTMLElement | null;
@@ -97,7 +115,15 @@ class BubbleShooterGame {
     this.menuHighScoreVal = document.getElementById('menuHighScoreVal');
     this.btnModeClassic = document.getElementById('btnModeClassic');
     this.btnModeSurvival = document.getElementById('btnModeSurvival');
+    this.btnModeTimeAttack = document.getElementById('btnModeTimeAttack');
+    this.btnModePuzzle = document.getElementById('btnModePuzzle');
     this.modeDescText = document.getElementById('modeDescText');
+    this.modeButtons = [
+      { mode: 'classic', el: this.btnModeClassic },
+      { mode: 'survival', el: this.btnModeSurvival },
+      { mode: 'timeattack', el: this.btnModeTimeAttack },
+      { mode: 'puzzle', el: this.btnModePuzzle }
+    ];
     this.btnStartGame = document.getElementById('btnStartGame');
     this.btnOpenSettings = document.getElementById('btnOpenSettings');
     this.btnOpenAbout = document.getElementById('btnOpenAbout');
@@ -125,6 +151,8 @@ class BubbleShooterGame {
 
     this.gameOverModal = document.getElementById('gameOverModal');
     this.victoryModal = document.getElementById('victoryModal');
+    this.goTitleEl = document.getElementById('goTitle');
+    this.goSubtitleEl = document.getElementById('goSubtitle');
     this.goScoreEl = document.getElementById('goScore');
     this.goPoppedEl = document.getElementById('goPopped');
     this.vicScoreEl = document.getElementById('vicScore');
@@ -155,19 +183,13 @@ class BubbleShooterGame {
   }
 
   private loadSavedSettings() {
-    const savedScore = localStorage.getItem('snapfall_highscore');
-    if (savedScore) {
-      this.highScore = parseInt(savedScore, 10) || 0;
-      if (this.highScoreEl) {
-        this.highScoreEl.textContent = this.highScore.toString();
-      }
-      if (this.menuHighScoreVal) {
-        this.menuHighScoreVal.textContent = this.highScore.toString();
-      }
-    }
+    (['classic', 'survival', 'timeattack', 'puzzle'] as GameMode[]).forEach((m) => {
+      const saved = localStorage.getItem(HIGH_SCORE_KEY_PREFIX + m);
+      this.highScores[m] = saved ? parseInt(saved, 10) || 0 : 0;
+    });
 
     const savedMode = localStorage.getItem('snapfall_mode') as GameMode | null;
-    if (savedMode === 'survival' || savedMode === 'classic') {
+    if (savedMode === 'survival' || savedMode === 'classic' || savedMode === 'timeattack' || savedMode === 'puzzle') {
       this.setMode(savedMode);
     } else {
       this.setMode('classic');
@@ -236,68 +258,63 @@ class BubbleShooterGame {
     this.mode = newMode;
     localStorage.setItem('snapfall_mode', newMode);
 
-    if (this.btnModeClassic && this.btnModeSurvival && this.modeDescText) {
-      if (newMode === 'classic') {
-        this.btnModeClassic.classList.add('active');
-        this.btnModeSurvival.classList.remove('active');
-        this.modeDescText.textContent = 'Bölüm bazlı: Tüm balonları temizleyerek seviyeleri aşın.';
-      } else {
-        this.btnModeSurvival.classList.add('active');
-        this.btnModeClassic.classList.remove('active');
-        this.modeDescText.textContent = 'Sonsuz mod: Balonlar sürekli yenilenir, rekor skoru hedefleyin!';
-      }
+    for (const { mode, el } of this.modeButtons) {
+      el?.classList.toggle('active', mode === newMode);
+    }
+    if (this.modeDescText) {
+      this.modeDescText.textContent = MODE_DESCRIPTIONS[newMode];
     }
 
     this.updateLevelDisplay();
+    this.updateHighScoreDisplays();
+  }
+
+  private formatTime(seconds: number): string {
+    const s = Math.max(0, Math.ceil(seconds));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}:${r.toString().padStart(2, '0')}`;
   }
 
   private updateLevelDisplay() {
-    if (this.mode === 'classic') {
-      if (this.levelLabelEl) this.levelLabelEl.textContent = 'Seviye';
-      if (this.levelEl) this.levelEl.textContent = this.level.toString();
-    } else {
-      if (this.levelLabelEl) this.levelLabelEl.textContent = 'Mod';
-      if (this.levelEl) this.levelEl.textContent = 'Sonsuz';
+    if (!this.levelLabelEl || !this.levelEl) return;
+
+    switch (this.mode) {
+      case 'classic':
+        this.levelLabelEl.textContent = 'Seviye';
+        this.levelEl.textContent = this.level.toString();
+        break;
+      case 'survival':
+        this.levelLabelEl.textContent = 'Mod';
+        this.levelEl.textContent = 'Sonsuz';
+        break;
+      case 'timeattack':
+        this.levelLabelEl.textContent = 'Süre';
+        this.levelEl.textContent = this.formatTime(this.timeRemaining);
+        break;
+      case 'puzzle':
+        this.levelLabelEl.textContent = 'Atış';
+        this.levelEl.textContent = this.shotsRemaining.toString();
+        break;
     }
+  }
+
+  private updateHighScoreDisplays() {
+    const score = this.highScores[this.mode];
+    if (this.highScoreEl) this.highScoreEl.textContent = score.toString();
+    if (this.menuHighScoreVal) this.menuHighScoreVal.textContent = score.toString();
   }
 
   private updateHighScore() {
-    if (this.score > this.highScore) {
-      this.highScore = this.score;
-      localStorage.setItem('snapfall_highscore', this.highScore.toString());
-      if (this.highScoreEl) {
-        this.highScoreEl.textContent = this.highScore.toString();
-      }
-      if (this.menuHighScoreVal) {
-        this.menuHighScoreVal.textContent = this.highScore.toString();
-      }
+    if (this.score > this.highScores[this.mode]) {
+      this.highScores[this.mode] = this.score;
+      localStorage.setItem(HIGH_SCORE_KEY_PREFIX + this.mode, this.score.toString());
+      this.updateHighScoreDisplays();
     }
   }
 
-  private initLevel(lvl: number) {
-    this.grid.resetCeiling();
-    this.matrix = this.grid.createEmptyMatrix();
-
-    if (this.mode === 'classic') {
-      this.maxFouls = 5;
-      this.foulsLeft = 5;
-    } else {
-      this.maxFouls = 4;
-      this.foulsLeft = 4;
-    }
-
-    this.updateLevelDisplay();
-
-    const colors = [
-      BubbleColor.RED,
-      BubbleColor.BLUE,
-      BubbleColor.GREEN,
-      BubbleColor.YELLOW,
-      BubbleColor.PURPLE
-    ];
-
-    const initialRows = this.mode === 'classic' ? Math.min(6, 3 + lvl) : 5;
-    for (let r = 0; r < initialRows; r++) {
+  private fillProceduralRows(colors: BubbleColor[], rows: number) {
+    for (let r = 0; r < rows; r++) {
       const cols = this.grid.getColsInRow(r);
       for (let c = 0; c < cols; c++) {
         const color = colors[(r * 3 + c + Math.floor(c / 2)) % colors.length];
@@ -310,12 +327,71 @@ class BubbleShooterGame {
         };
       }
     }
+  }
+
+  private fillPuzzleBoard(lvl: number) {
+    const colors = [
+      BubbleColor.RED,
+      BubbleColor.BLUE,
+      BubbleColor.GREEN,
+      BubbleColor.YELLOW,
+      BubbleColor.PURPLE
+    ];
+    const rows = PUZZLE_ROW_SCHEDULE[Math.min(lvl - 1, PUZZLE_ROW_SCHEDULE.length - 1)];
+    this.fillProceduralRows(colors, rows);
+
+    const { total } = this.grid.getActiveColors(this.matrix);
+    this.shotsRemaining = total + PUZZLE_SHOT_MARGIN;
+  }
+
+  private initLevel(lvl: number) {
+    this.grid.resetCeiling();
+    this.matrix = this.grid.createEmptyMatrix();
+
+    const colors = [
+      BubbleColor.RED,
+      BubbleColor.BLUE,
+      BubbleColor.GREEN,
+      BubbleColor.YELLOW,
+      BubbleColor.PURPLE
+    ];
+
+    // Fouls only trigger the descending ceiling in classic/survival; in the
+    // other two modes they're kept lit purely for the shooter HUD's dots.
+    if (this.mode === 'classic') {
+      this.maxFouls = 5;
+      this.foulsLeft = 5;
+      this.fillProceduralRows(colors, Math.min(6, 3 + lvl));
+    } else if (this.mode === 'survival') {
+      this.maxFouls = 4;
+      this.foulsLeft = 4;
+      this.fillProceduralRows(colors, 5);
+    } else if (this.mode === 'timeattack') {
+      this.maxFouls = 4;
+      this.foulsLeft = 4;
+      this.timeRemaining = TIME_ATTACK_DURATION;
+      this.fillProceduralRows(colors, 5);
+    } else {
+      this.maxFouls = 5;
+      this.foulsLeft = 5;
+      this.fillPuzzleBoard(lvl);
+    }
+
+    this.updateLevelDisplay();
 
     const { colors: activeColors, total: totalBubbles } = this.grid.getActiveColors(this.matrix);
     this.shooter.resetColors(activeColors, totalBubbles);
 
     if (this.state === 'playing' && this.coordInfoEl) {
-      this.coordInfoEl.textContent = this.mode === 'classic' ? `Seviye ${lvl} Başladı!` : 'Sonsuz Hayatta Kalma Başladı!';
+      if (this.mode === 'classic') {
+        this.coordInfoEl.textContent = `Seviye ${lvl} Başladı!`;
+      } else if (this.mode === 'survival') {
+        this.coordInfoEl.textContent = 'Sonsuz Hayatta Kalma Başladı!';
+      } else if (this.mode === 'timeattack') {
+        this.coordInfoEl.textContent = 'Zamana Karşı Başladı!';
+      } else {
+        this.coordInfoEl.textContent = `Bulmaca ${lvl} Başladı!`;
+      }
     }
   }
 
@@ -411,13 +487,11 @@ class BubbleShooterGame {
   }
 
   private setupModeSelector() {
-    this.btnModeClassic?.addEventListener('click', () => {
-      this.setMode('classic');
-    });
-
-    this.btnModeSurvival?.addEventListener('click', () => {
-      this.setMode('survival');
-    });
+    for (const { mode, el } of this.modeButtons) {
+      el?.addEventListener('click', () => {
+        this.setMode(mode);
+      });
+    }
   }
 
   private setupControlButtons() {
@@ -633,6 +707,11 @@ class BubbleShooterGame {
     const speed = 1250;
     this.physics.launch(this.shooter.origin, this.shooter.angle, speed, color);
 
+    if (this.mode === 'puzzle') {
+      this.shotsRemaining = Math.max(0, this.shotsRemaining - 1);
+      this.updateLevelDisplay();
+    }
+
     if (this.coordInfoEl) {
       this.coordInfoEl.textContent = `Ateşlendi! [${color}]`;
     }
@@ -649,7 +728,7 @@ class BubbleShooterGame {
     return count;
   }
 
-  private replenishSurvivalRow() {
+  private replenishEndlessRow() {
     const colors = [
       BubbleColor.RED,
       BubbleColor.BLUE,
@@ -754,27 +833,31 @@ class BubbleShooterGame {
       }
 
       // Check Victory vs Endless Replenish
-      if (this.mode === 'classic') {
+      if (this.mode === 'classic' || this.mode === 'puzzle') {
         if (this.grid.isGridEmpty(this.matrix)) {
           this.triggerVictory();
           return;
         }
       } else {
         if (this.countTotalBubbles() < 18) {
-          this.replenishSurvivalRow();
+          this.replenishEndlessRow();
         }
       }
     } else {
       this.combo = 0;
       this.score += 10;
-      this.foulsLeft--;
 
-      if (this.foulsLeft <= 0) {
-        this.triggerCeilingDescent();
-      } else {
-        if (this.coordInfoEl) {
+      // Fouls only trigger the descending ceiling in classic/survival.
+      if (this.mode === 'classic' || this.mode === 'survival') {
+        this.foulsLeft--;
+
+        if (this.foulsLeft <= 0) {
+          this.triggerCeilingDescent();
+        } else if (this.coordInfoEl) {
           this.coordInfoEl.textContent = `Kilitlendi: (${snappedCell.row}, ${snappedCell.col}) | Tavan: ${this.foulsLeft}`;
         }
+      } else if (this.coordInfoEl) {
+        this.coordInfoEl.textContent = `Kilitlendi: (${snappedCell.row}, ${snappedCell.col})`;
       }
     }
 
@@ -791,7 +874,9 @@ class BubbleShooterGame {
 
     // Check Game Over threshold (danger line at y = 520)
     if (this.grid.hasReachedDangerLine(this.matrix, 520)) {
-      this.triggerGameOver();
+      this.triggerGameOver('danger');
+    } else if (this.mode === 'puzzle' && this.shotsRemaining <= 0 && !this.grid.isGridEmpty(this.matrix)) {
+      this.triggerGameOver('noshots');
     }
   }
 
@@ -813,14 +898,27 @@ class BubbleShooterGame {
     }
 
     if (dangerHit || this.grid.hasReachedDangerLine(this.matrix, 520)) {
-      this.triggerGameOver();
+      this.triggerGameOver('danger');
     }
   }
 
-  private triggerGameOver() {
+  private triggerGameOver(reason: 'danger' | 'timeup' | 'noshots' = 'danger') {
     this.state = 'gameover';
     this.audio.stopBackgroundMusic();
     this.audio.playGameOver();
+
+    if (this.goTitleEl && this.goSubtitleEl) {
+      if (reason === 'timeup') {
+        this.goTitleEl.textContent = 'SÜRE DOLDU!';
+        this.goSubtitleEl.textContent = 'Zaman bitti, skorunuz kaydedildi.';
+      } else if (reason === 'noshots') {
+        this.goTitleEl.textContent = 'ATIŞLAR BİTTİ!';
+        this.goSubtitleEl.textContent = 'Tahtayı temizlemeden atışlarınız tükendi.';
+      } else {
+        this.goTitleEl.textContent = 'OYUN BİTTİ';
+        this.goSubtitleEl.textContent = 'Baloncuklar tehlike çizgisini aştı!';
+      }
+    }
 
     if (this.goScoreEl) this.goScoreEl.textContent = this.score.toString();
     if (this.goPoppedEl) this.goPoppedEl.textContent = this.totalPopped.toString();
@@ -862,7 +960,8 @@ class BubbleShooterGame {
     this.state = 'playing';
     this.audio.playBackgroundMusic();
     this.audio.playLevelUp();
-    this.effects.addComicBurst(`SEVİYE ${this.level}!`, this.canvas.width / 2, this.canvas.height / 2 - 40, '#00e676', 1.3);
+    const bannerText = this.mode === 'puzzle' ? `BULMACA ${this.level}!` : `SEVİYE ${this.level}!`;
+    this.effects.addComicBurst(bannerText, this.canvas.width / 2, this.canvas.height / 2 - 40, '#00e676', 1.3);
   }
 
   private gameLoop = (timestamp: number) => {
@@ -880,6 +979,17 @@ class BubbleShooterGame {
 
     if (this.state === 'playing') {
       this.shooter.update(dt);
+
+      if (this.mode === 'timeattack') {
+        this.timeRemaining -= dt;
+        if (this.timeRemaining <= 0) {
+          this.timeRemaining = 0;
+          this.updateLevelDisplay();
+          this.triggerGameOver('timeup');
+          return;
+        }
+        this.updateLevelDisplay();
+      }
 
       if (this.physics.currentProjectile !== null) {
         const step = this.physics.update(dt, this.matrix);

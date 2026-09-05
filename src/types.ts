@@ -138,7 +138,7 @@ export interface ComicBurst {
 }
 
 export type GameState = 'menu' | 'playing' | 'paused' | 'gameover' | 'victory';
-export type GameMode = 'classic' | 'survival';
+export type GameMode = 'classic' | 'survival' | 'timeattack' | 'puzzle';
 
 export interface GameStats {
   score: number;
