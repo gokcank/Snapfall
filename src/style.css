@@ -261,7 +261,7 @@ body {
 .hud-icon-btn {
   width: 36px;
   height: 36px;
-  border-radius: 12px;
+  border-radius: 6px;
   background: linear-gradient(180deg, #2f2752 0%, #1a1533 100%);
   border: 1.5px solid #ffd600;
   color: #ffffff;
@@ -270,7 +270,7 @@ body {
   align-items: center;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.05s ease;
   box-shadow: 0 3px 0 #100d20, 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
@@ -572,9 +572,7 @@ canvas#gameCanvas {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5, 5, 10, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(5, 5, 10, 0.94);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -593,7 +591,7 @@ canvas#gameCanvas {
   background: #19142f;
   border: 2px solid #ffd600;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), inset 0 2px 0 rgba(255, 255, 255, 0.15);
-  border-radius: 24px;
+  border-radius: 10px;
   padding: 28px 22px;
   display: flex;
   flex-direction: column;
@@ -667,7 +665,7 @@ canvas#gameCanvas {
   gap: 10px;
   background: #130f24;
   border: 1px solid #362e58;
-  border-radius: 10px;
+  border-radius: 6px;
   padding: 8px 12px;
 }
 
@@ -768,7 +766,7 @@ canvas#gameCanvas {
   gap: 8px;
   background: #130f24;
   border: 1px solid #362e58;
-  border-radius: 12px;
+  border-radius: 6px;
   padding: 8px 12px;
 }
 
@@ -830,7 +828,7 @@ canvas#gameCanvas {
 .stat-box {
   background: #130f24;
   border: 1px solid #362e58;
-  border-radius: 14px;
+  border-radius: 8px;
   padding: 12px 10px;
   display: flex;
   flex-direction: column;
@@ -860,7 +858,7 @@ canvas#gameCanvas {
   background: linear-gradient(180deg, #ffe082 0%, #ffe082 28%, #ffd600 29%, #ffd600 64%, #ff9100 65%, #ff9100 100%);
   color: #2d1600;
   border: 2px solid #fff59d;
-  border-radius: 16px;
+  border-radius: 8px;
   font-family: 'Bungee', 'Outfit', sans-serif;
   font-size: clamp(12px, 4vw, 16px);
   font-weight: 700;
@@ -870,7 +868,7 @@ canvas#gameCanvas {
   padding: 0 8px;
   cursor: pointer;
   box-shadow: 0 5px 0 #b35900, 0 8px 20px rgba(0, 0, 0, 0.6);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: transform 0.04s ease, box-shadow 0.04s ease;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -887,7 +885,7 @@ canvas#gameCanvas {
   background: linear-gradient(180deg, #322b56 0%, #201a3d 100%);
   color: #ffffff;
   border: 2px solid #4a3f7a;
-  border-radius: 16px;
+  border-radius: 8px;
   font-family: 'Bungee', 'Outfit', sans-serif;
   font-size: clamp(11px, 3.4vw, 14px);
   font-weight: 700;
@@ -897,7 +895,7 @@ canvas#gameCanvas {
   padding: 0 8px;
   cursor: pointer;
   box-shadow: 0 4px 0 #120d26, 0 6px 15px rgba(0, 0, 0, 0.5);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: transform 0.04s ease, box-shadow 0.04s ease;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -961,7 +959,7 @@ canvas#gameCanvas {
   width: 100%;
   background: rgba(255, 170, 0, 0.08);
   border: 1px solid rgba(255, 170, 0, 0.3);
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 12px 16px;
   display: flex;
   flex-direction: column;
@@ -994,7 +992,7 @@ canvas#gameCanvas {
   width: 100%;
   background: #130f24;
   border: 1px solid #362e58;
-  border-radius: 18px;
+  border-radius: 8px;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -1019,7 +1017,7 @@ canvas#gameCanvas {
   gap: 8px;
   background: #0d0b1a;
   padding: 4px;
-  border-radius: 14px;
+  border-radius: 6px;
   border: 1px solid #292244;
 }
 
@@ -1035,9 +1033,9 @@ canvas#gameCanvas {
   white-space: nowrap;
   overflow: hidden;
   padding: 0 4px;
-  border-radius: 10px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.05s ease;
 }
 
 .btn-mode.active {
@@ -1071,7 +1069,7 @@ canvas#gameCanvas {
   align-items: center;
   background: #130f24;
   border: 1px solid #362e58;
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 12px 16px;
 }
 
@@ -1086,7 +1084,7 @@ canvas#gameCanvas {
 .btn-toggle {
   min-width: 76px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-dim);
@@ -1095,7 +1093,7 @@ canvas#gameCanvas {
   font-weight: 700;
   letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.05s ease;
 }
 
 .btn-toggle.active {
