@@ -8,6 +8,8 @@ import { CannonShooter } from './shooter';
 import { TrajectoryCalculator } from './trajectory';
 import { BubbleColor, GameMode, GameState, GridMatrix } from './types';
 
+const VICTORY_BONUS = 1000;
+
 class BubbleShooterGame {
   private canvas: HTMLCanvasElement;
   private grid: HexGrid;
@@ -53,6 +55,10 @@ class BubbleShooterGame {
   private btnOpenAbout: HTMLElement | null;
   private aboutModal: HTMLElement | null;
   private btnCloseAbout: HTMLElement | null;
+  private btnOpenScoring: HTMLElement | null;
+  private scoringModal: HTMLElement | null;
+  private btnCloseScoring: HTMLElement | null;
+  private vicBonusVal: HTMLElement | null;
 
   private pauseModal: HTMLElement | null;
   private btnResume: HTMLElement | null;
@@ -97,6 +103,14 @@ class BubbleShooterGame {
     this.btnOpenAbout = document.getElementById('btnOpenAbout');
     this.aboutModal = document.getElementById('aboutModal');
     this.btnCloseAbout = document.getElementById('btnCloseAbout');
+    this.btnOpenScoring = document.getElementById('btnOpenScoring');
+    this.scoringModal = document.getElementById('scoringModal');
+    this.btnCloseScoring = document.getElementById('btnCloseScoring');
+    this.vicBonusVal = document.getElementById('vicBonusVal');
+
+    const scoringVictoryBonusEl = document.getElementById('scoringVictoryBonus');
+    if (scoringVictoryBonusEl) scoringVictoryBonusEl.textContent = `+${VICTORY_BONUS}`;
+    if (this.vicBonusVal) this.vicBonusVal.textContent = `+${VICTORY_BONUS}`;
 
     this.pauseModal = document.getElementById('pauseModal');
     this.btnResume = document.getElementById('btnResume');
@@ -442,6 +456,16 @@ class BubbleShooterGame {
 
     this.btnCloseAbout?.addEventListener('click', () => {
       if (this.aboutModal) this.aboutModal.classList.add('hidden');
+      if (this.mainMenuModal) this.mainMenuModal.classList.remove('hidden');
+    });
+
+    this.btnOpenScoring?.addEventListener('click', () => {
+      if (this.mainMenuModal) this.mainMenuModal.classList.add('hidden');
+      if (this.scoringModal) this.scoringModal.classList.remove('hidden');
+    });
+
+    this.btnCloseScoring?.addEventListener('click', () => {
+      if (this.scoringModal) this.scoringModal.classList.add('hidden');
       if (this.mainMenuModal) this.mainMenuModal.classList.remove('hidden');
     });
 
@@ -808,7 +832,7 @@ class BubbleShooterGame {
     this.audio.stopBackgroundMusic();
     this.audio.playVictory();
 
-    this.score += 1000;
+    this.score += VICTORY_BONUS;
     this.updateHighScore();
 
     if (this.vicScoreEl) this.vicScoreEl.textContent = this.score.toString();

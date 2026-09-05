@@ -103,8 +103,33 @@
             <div class="modal-actions-col">
               <button class="btn-primary" id="btnStartGame">OYUNA BAŞLA</button>
               <button class="btn-secondary" id="btnOpenSettings">AYARLAR</button>
+              <button class="btn-secondary" id="btnOpenScoring">PUANLAMA</button>
               <button class="btn-secondary" id="btnOpenAbout">HAKKINDA</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Scoring Info Modal -->
+        <div class="modal-overlay hidden" id="scoringModal">
+          <div class="modal-card scoring-card">
+            <div class="modal-icon">
+              <svg class="arcade-modal-svg scoring-svg" viewBox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="20" fill="#1d163a" stroke="#ffd600" stroke-width="3"></circle>
+                <text x="24" y="31" font-family="Bungee, sans-serif" font-size="18" fill="#ffd600" text-anchor="middle">+</text>
+              </svg>
+            </div>
+            <h2 class="modal-title">PUANLAMA</h2>
+            <p class="modal-subtitle">Puanlar nereden geliyor?</p>
+
+            <ul class="scoring-list">
+              <li><span class="scoring-rule-label">Isabetsiz atış</span><span class="scoring-rule-val">+10</span></li>
+              <li><span class="scoring-rule-label">Eşleşme (3+ aynı renk)</span><span class="scoring-rule-val">30 × adet × kombo</span></li>
+              <li><span class="scoring-rule-label">Düşüş bonusu</span><span class="scoring-rule-val">100 × adet × kombo</span></li>
+              <li><span class="scoring-rule-label">Seviye tamamlama</span><span class="scoring-rule-val" id="scoringVictoryBonus">+1000</span></li>
+            </ul>
+            <p class="about-text">Kombo çarpanı art arda yapılan eşleşmelerle artar, en fazla 5'e kadar çıkar.</p>
+
+            <button class="btn-primary" id="btnCloseScoring">KAPAT</button>
           </div>
         </div>
 
@@ -246,7 +271,7 @@
               </div>
               <div class="stat-box">
                 <span class="stat-box-label">Bonus</span>
-                <span class="stat-box-val">+1000</span>
+                <span class="stat-box-val" id="vicBonusVal">+1000</span>
               </div>
             </div>
 

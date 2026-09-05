@@ -652,6 +652,40 @@ canvas#gameCanvas {
   margin-bottom: 20px;
 }
 
+.scoring-list {
+  width: 100%;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.scoring-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: #130f24;
+  border: 1px solid #362e58;
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.scoring-rule-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: left;
+}
+
+.scoring-rule-val {
+  font-family: 'Silkscreen', 'Outfit', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffd600;
+  white-space: nowrap;
+}
+
 .about-text {
   font-size: 13px;
   line-height: 1.5;
