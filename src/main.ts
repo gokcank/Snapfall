@@ -861,6 +861,8 @@ class BubbleShooterGame {
     this.initLevel(this.level);
     this.state = 'playing';
     this.audio.playBackgroundMusic();
+    this.audio.playLevelUp();
+    this.effects.addComicBurst(`SEVİYE ${this.level}!`, this.canvas.width / 2, this.canvas.height / 2 - 40, '#00e676', 1.3);
   }
 
   private gameLoop = (timestamp: number) => {

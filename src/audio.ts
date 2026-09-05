@@ -167,6 +167,34 @@ export class SoundEffects {
     osc.stop(now + 0.25);
   }
 
+  playLevelUp() {
+    if (!this.enabled) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const notes = [392, 523.25, 659.25]; // G4, C5, E5
+    const now = this.ctx.currentTime;
+
+    notes.forEach((freq, idx) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const start = now + idx * 0.09;
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, start);
+
+      gain.gain.setValueAtTime(0.15, start);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + 0.22);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(start);
+      osc.stop(start + 0.22);
+    });
+  }
+
   playVictory() {
     if (!this.enabled) return;
     this.initCtx();

@@ -78,7 +78,7 @@ export class EffectsManager {
     });
   }
 
-  addComicBurst(text: string, x: number, y: number, color: string = '#ffd600') {
+  addComicBurst(text: string, x: number, y: number, color: string = '#ffd600', maxLife: number = 0.85) {
     const rotation = (Math.random() - 0.5) * 0.3;
     this.comicBursts.push({
       text,
@@ -91,7 +91,7 @@ export class EffectsManager {
       textColor: '#16102b',
       alpha: 1.0,
       life: 0,
-      maxLife: 0.85
+      maxLife
     });
   }
 
