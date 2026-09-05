@@ -139,7 +139,7 @@ class BubbleShooterGame {
     if (savedScore) {
       this.highScore = parseInt(savedScore, 10) || 0;
       if (this.highScoreEl) {
-        this.highScoreEl.textContent = `En Yüksek: ${this.highScore}`;
+        this.highScoreEl.textContent = this.highScore.toString();
       }
       if (this.menuHighScoreVal) {
         this.menuHighScoreVal.textContent = this.highScore.toString();
@@ -243,7 +243,7 @@ class BubbleShooterGame {
       this.highScore = this.score;
       localStorage.setItem('snapfall_highscore', this.highScore.toString());
       if (this.highScoreEl) {
-        this.highScoreEl.textContent = `En Yüksek: ${this.highScore}`;
+        this.highScoreEl.textContent = this.highScore.toString();
       }
       if (this.menuHighScoreVal) {
         this.menuHighScoreVal.textContent = this.highScore.toString();
