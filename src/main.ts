@@ -461,32 +461,6 @@ class BubbleShooterGame {
       this.closeSettings();
     });
 
-    // Arcade Cabinet CPO Action Buttons
-    const btnA = document.querySelector('.cpo-arcade-btn.btn-a');
-    const btnB = document.querySelector('.cpo-arcade-btn.btn-b');
-    const btnC = document.querySelector('.cpo-arcade-btn.btn-c');
-    const btnD = document.querySelector('.cpo-arcade-btn.btn-d');
-
-    btnA?.addEventListener('click', () => {
-      if (this.state === 'playing') {
-        this.fireBubble();
-      }
-    });
-
-    btnB?.addEventListener('click', () => {
-      if (this.state === 'playing') {
-        this.shooter.swapColors();
-      }
-    });
-
-    btnC?.addEventListener('click', () => {
-      this.toggleSound();
-    });
-
-    btnD?.addEventListener('click', () => {
-      this.toggleLaser();
-    });
-
     // Arcade Joystick Interactive Drag & Aim
     const stickWrap = document.querySelector('.cpo-joystick-wrap') as HTMLElement | null;
     const stickBall = document.querySelector('.cpo-joystick-ball') as HTMLElement | null;

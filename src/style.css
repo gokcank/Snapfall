@@ -380,13 +380,16 @@ canvas#gameCanvas {
 }
 
 /* 2D Retro Joystick (Left) */
-.cpo-joystick-wrap {
-  width: 48px;
-  height: 58px;
+.cpo-joystick-group {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cpo-joystick-wrap {
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
   cursor: pointer;
   position: relative;
@@ -435,18 +438,20 @@ canvas#gameCanvas {
   letter-spacing: 1px;
   color: #8c82b0;
   text-transform: uppercase;
-  margin-top: 42px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
-/* Center Coin Door & Marquee */
+.cpo-stick-label {
+  white-space: nowrap;
+}
+
+/* Center Marquee Info Text */
 .cpo-center-deck {
   flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 0 8px;
+  margin: 0 10px;
   overflow: hidden;
 }
 
@@ -454,6 +459,7 @@ canvas#gameCanvas {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
   background: #0d0a18;
   border: 1.5px solid #ffd600;
   border-radius: 8px;
@@ -496,81 +502,12 @@ canvas#gameCanvas {
   font-size: 9.5px;
   font-weight: 600;
   color: #a5a1c0;
-  margin-top: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 190px;
+  max-width: 100%;
   text-align: center;
 }
-
-/* Action Buttons Cluster (Neo-Geo 4-Button Curved Arc) */
-.cpo-buttons-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.cpo-button-cluster {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 38px;
-}
-
-.cpo-arcade-btn {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.45);
-  font-family: 'Bungee', 'Outfit', sans-serif;
-  font-size: 10px;
-  font-weight: 800;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 3.5px 0 rgba(0, 0, 0, 0.85), 0 3px 6px rgba(0, 0, 0, 0.6);
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Neo-Geo button curvature heights */
-.cpo-arcade-btn.btn-a {
-  margin-bottom: 2px;
-  background: radial-gradient(circle at 35% 30%, #ff6685 0%, #ff3355 60%, #990022 100%);
-  color: #ffffff;
-  border-color: #ff99b0;
-}
-
-.cpo-arcade-btn.btn-b {
-  margin-bottom: 7px;
-  background: radial-gradient(circle at 35% 30%, #fff176 0%, #ffd600 60%, #b38600 100%);
-  color: #332000;
-  border-color: #fff9c4;
-}
-
-.cpo-arcade-btn.btn-c {
-  margin-bottom: 10px;
-  background: radial-gradient(circle at 35% 30%, #69f0ae 0%, #00e676 60%, #006633 100%);
-  color: #002914;
-  border-color: #b9f6ca;
-}
-
-.cpo-arcade-btn.btn-d {
-  margin-bottom: 5px;
-  background: radial-gradient(circle at 35% 30%, #82b1ff 0%, #2979ff 60%, #003db3 100%);
-  color: #ffffff;
-  border-color: #bbdefb;
-}
-
-.cpo-arcade-btn:active {
-  transform: translateY(2.5px);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
-}
-
 
 /* Custom 90s Arcade Vector SVG Icons */
 .arcade-hud-svg {
@@ -1069,10 +1006,5 @@ canvas#gameCanvas {
   .arcade-cpo-panel {
     height: 66px;
     padding: 0 8px;
-  }
-  .cpo-arcade-btn {
-    width: 22px;
-    height: 22px;
-    font-size: 9px;
   }
 }
