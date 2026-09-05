@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "tsx src/test_grid.ts && tsx src/test_physics.ts && tsx src/test_algorithms.ts && tsx src/test_gameover.ts && tsx src/test_smart_colors.ts && npm run build"
+    "test": "tsx src/test_grid.ts && tsx src/test_physics.ts && tsx src/test_algorithms.ts && tsx src/test_gameover.ts && tsx src/test_smart_colors.ts && tsx src/test_ceiling_repro.ts && npm run build"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.1",
