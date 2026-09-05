@@ -382,7 +382,7 @@ export class CanvasRenderer {
 
     // Label: "SONRAKİ" in warm retro font
     ctx.fillStyle = "#ffd600";
-    ctx.font = '700 11px "Fredoka", sans-serif';
+    ctx.font = '700 11px "Silkscreen", monospace';
     ctx.textAlign = "center";
     ctx.fillText("SONRAKİ", nextX, nextY + 28);
 
@@ -455,7 +455,7 @@ export class CanvasRenderer {
     for (const sp of effects.activeScorePopups) {
       ctx.save();
       ctx.globalAlpha = sp.alpha;
-      ctx.font = '700 18px "Fredoka", sans-serif';
+      ctx.font = '400 16px "Bungee", sans-serif';
       ctx.fillStyle = sp.color;
       ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
       ctx.shadowBlur = 6;
@@ -516,7 +516,7 @@ export class CanvasRenderer {
       ctx.stroke();
 
       // Bold comic arcade text
-      ctx.font = '800 13px "Fredoka", sans-serif';
+      ctx.font = '400 12px "Bungee", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = cb.textColor;
@@ -587,7 +587,7 @@ export class CanvasRenderer {
     ctx.shadowBlur = 0;
 
     if (hasWarning) {
-      ctx.font = '700 10px "Space Mono", monospace';
+      ctx.font = '700 10px "Silkscreen", monospace';
       ctx.fillStyle = '#ff0055';
       ctx.textAlign = 'center';
       ctx.fillText('⚠️ TEHLİKE ÇİZGİSİ', this.canvas.width / 2, dangerY - 6);
