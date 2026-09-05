@@ -56,7 +56,7 @@ class BubbleShooterGame {
   private modeButtons: { mode: GameMode; el: HTMLElement | null }[] = [];
   private leaderboards: Record<GameMode, LeaderboardEntry[]> = { classic: [], survival: [], timeattack: [], puzzle: [] };
   private nameEntryLetters: number[] = [0, 0, 0];
-  private pendingGameOverReason: 'danger' | 'timeup' | 'noshots' = 'danger';
+  private nameEntryOnSaved: () => void = () => {};
 
   private soundEnabled: boolean = true;
   private laserEnabled: boolean = true;
@@ -389,7 +389,14 @@ class BubbleShooterGame {
     });
   }
 
-  private showNameEntry() {
+  private showNameEntry(onSaved: () => void) {
+    // A run can reach the name entry screen while the pause or victory modal
+    // is still marked visible underneath it (see maybeRecordRunScore) — hide
+    // them so the entry screen isn't drawn behind an earlier sibling modal.
+    if (this.pauseModal) this.pauseModal.classList.add('hidden');
+    if (this.victoryModal) this.victoryModal.classList.add('hidden');
+
+    this.nameEntryOnSaved = onSaved;
     this.nameEntryLetters = [0, 0, 0];
     this.updateNameEntryDisplay();
     if (this.nameEntryScoreVal) this.nameEntryScoreVal.textContent = this.score.toString();
@@ -400,7 +407,24 @@ class BubbleShooterGame {
     const name = this.nameEntryLetters.map((i) => NAME_CHARS[i]).join('');
     this.addLeaderboardEntry(this.mode, name, this.score);
     if (this.nameEntryModal) this.nameEntryModal.classList.add('hidden');
-    this.showGameOverModal(this.pendingGameOverReason);
+    this.nameEntryOnSaved();
+  }
+
+  // Checks whether the run currently in progress (or just concluded in
+  // victory) has a score worth recording before it's abandoned — covers not
+  // just dying, but also quitting to the menu or restarting mid-run, both of
+  // which used to silently drop a qualifying score. Returns true if the name
+  // entry screen was shown (onDone will run once the player saves).
+  private maybeRecordRunScore(onDone: () => void): boolean {
+    if (
+      (this.state === 'playing' || this.state === 'paused' || this.state === 'victory') &&
+      this.score > 0 &&
+      this.qualifiesForLeaderboard(this.mode, this.score)
+    ) {
+      this.showNameEntry(onDone);
+      return true;
+    }
+    return false;
   }
 
   private fillProceduralRows(colors: BubbleColor[], rows: number) {
@@ -600,6 +624,7 @@ class BubbleShooterGame {
     });
 
     this.btnPauseRestart?.addEventListener('click', () => {
+      if (this.maybeRecordRunScore(() => { this.resumeGame(); this.restartGame(); })) return;
       this.resumeGame();
       this.restartGame();
     });
@@ -802,6 +827,11 @@ class BubbleShooterGame {
   }
 
   private returnToMainMenu() {
+    if (this.maybeRecordRunScore(() => this.goToMainMenu())) return;
+    this.goToMainMenu();
+  }
+
+  private goToMainMenu() {
     if (this.gameOverModal) this.gameOverModal.classList.add('hidden');
     if (this.victoryModal) this.victoryModal.classList.add('hidden');
     if (this.pauseModal) this.pauseModal.classList.add('hidden');
@@ -1030,8 +1060,7 @@ class BubbleShooterGame {
     if (this.goPoppedEl) this.goPoppedEl.textContent = this.totalPopped.toString();
 
     if (this.score > 0 && this.qualifiesForLeaderboard(this.mode, this.score)) {
-      this.pendingGameOverReason = reason;
-      this.showNameEntry();
+      this.showNameEntry(() => this.showGameOverModal(reason));
     } else {
       this.showGameOverModal(reason);
     }
