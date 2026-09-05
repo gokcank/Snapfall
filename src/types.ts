@@ -123,6 +123,20 @@ export interface ScorePopup {
   color: string;
 }
 
+export interface ComicBurst {
+  text: string;
+  x: number;
+  y: number;
+  vy: number;
+  scale: number;
+  rotation: number;
+  color: string;
+  textColor: string;
+  alpha: number;
+  life: number;
+  maxLife: number;
+}
+
 export type GameState = 'menu' | 'playing' | 'paused' | 'gameover' | 'victory';
 export type GameMode = 'classic' | 'survival';
 

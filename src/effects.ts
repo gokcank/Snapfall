@@ -1,9 +1,10 @@
-import { Bubble, COLOR_PALETTE, FallingBubble, Particle, ScorePopup } from './types';
+import { Bubble, COLOR_PALETTE, ComicBurst, FallingBubble, Particle, ScorePopup } from './types';
 
 export class EffectsManager {
   private particles: Particle[] = [];
   private fallingBubbles: FallingBubble[] = [];
   private scorePopups: ScorePopup[] = [];
+  private comicBursts: ComicBurst[] = [];
 
   get activeParticles(): Particle[] {
     return this.particles;
@@ -15,6 +16,10 @@ export class EffectsManager {
 
   get activeScorePopups(): ScorePopup[] {
     return this.scorePopups;
+  }
+
+  get activeComicBursts(): ComicBurst[] {
+    return this.comicBursts;
   }
 
   spawnPopParticles(x: number, y: number, color: import('./types').BubbleColor) {
@@ -73,6 +78,23 @@ export class EffectsManager {
     });
   }
 
+  addComicBurst(text: string, x: number, y: number, color: string = '#ffd600') {
+    const rotation = (Math.random() - 0.5) * 0.3;
+    this.comicBursts.push({
+      text,
+      x,
+      y,
+      vy: -75,
+      scale: 0.3,
+      rotation,
+      color,
+      textColor: '#16102b',
+      alpha: 1.0,
+      life: 0,
+      maxLife: 0.85
+    });
+  }
+
   update(dt: number, canvasHeight: number) {
     // 1. Update Particles
     for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -111,6 +133,31 @@ export class EffectsManager {
 
       if (sp.life >= 0.9) {
         this.scorePopups.splice(i, 1);
+      }
+    }
+
+    // 4. Update Comic Bursts
+    for (let i = this.comicBursts.length - 1; i >= 0; i--) {
+      const cb = this.comicBursts[i];
+      cb.life += dt;
+      cb.y += cb.vy * dt;
+      cb.vy *= 0.94;
+      const progress = cb.life / cb.maxLife;
+
+      if (progress < 0.2) {
+        cb.scale = 0.3 + (progress / 0.2) * 0.85;
+      } else if (progress < 0.35) {
+        cb.scale = 1.15 - ((progress - 0.2) / 0.15) * 0.15;
+      } else {
+        cb.scale = 1.0;
+      }
+
+      if (progress > 0.6) {
+        cb.alpha = Math.max(0, 1.0 - (progress - 0.6) / 0.4);
+      }
+
+      if (cb.life >= cb.maxLife) {
+        this.comicBursts.splice(i, 1);
       }
     }
   }

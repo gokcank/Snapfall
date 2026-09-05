@@ -689,6 +689,21 @@ class BubbleShooterGame {
       const comboText = this.combo > 1 ? ` COMBO x${this.combo}!` : '';
       this.effects.addScorePopup(`+${points}${comboText}`, avgX, avgY, '#38bdf8');
 
+      // 90s Retro Arcade Comic Burst Badge
+      let burstText = 'POP!';
+      let burstColor = '#ffd600';
+      if (this.combo >= 3) {
+        burstText = 'SUPER!';
+        burstColor = '#ff3355';
+      } else if (this.combo === 2) {
+        burstText = 'GREAT!';
+        burstColor = '#00e676';
+      } else if (matches.length >= 5) {
+        burstText = 'BOOM!';
+        burstColor = '#ff6d00';
+      }
+      this.effects.addComicBurst(burstText, avgX, avgY - 18, burstColor);
+
       // 2. Check Floating / Hanging Clusters
       const floating = MatchFinder.findFloatingBubbles(this.grid, this.matrix);
       if (floating.length > 0) {
@@ -700,6 +715,14 @@ class BubbleShooterGame {
         this.effects.addFallingBubbles(floating, (r, c) => this.grid.gridToWorld(r, c));
 
         this.effects.addScorePopup(`+${dropPoints} DÜŞÜŞ BONUSU!`, avgX, avgY + 30, '#f59e0b');
+
+        let dropText = 'CRASH!';
+        let dropColor = '#ff9100';
+        if (floating.length >= 6) {
+          dropText = 'PERFECT!';
+          dropColor = '#ffd600';
+        }
+        this.effects.addComicBurst(dropText, avgX + (Math.random() - 0.5) * 40, avgY + 32, dropColor);
 
         if (this.coordInfoEl) {
           this.coordInfoEl.textContent = `${matches.length} Patlatıldı! ${floating.length} Düştü!`;

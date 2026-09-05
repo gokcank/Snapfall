@@ -214,18 +214,38 @@ export class CanvasRenderer {
 
     ctx.save();
 
-    // 1. Mechanical Turret Pedestal (Brass & Steel Arcade Base)
+    // 1. Mechanical Turret Pedestal with Rotating Gear Teeth
     // Base drop shadow
     ctx.beginPath();
-    ctx.ellipse(ox, oy + 16, 46, 13, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+    ctx.ellipse(ox, oy + 16, 48, 14, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
     ctx.fill();
+
+    // Rotating mechanical gear teeth around pedestal rim
+    const gearTeeth = 12;
+    const gearRot = angle * 2.0; // rotates smoothly with aim angle
+    ctx.save();
+    for (let i = 0; i < gearTeeth; i++) {
+      const a = gearRot + (i * Math.PI * 2) / gearTeeth;
+      const gx = ox + Math.cos(a) * 43;
+      const gy = oy + 10 + Math.sin(a) * 11;
+      ctx.save();
+      ctx.translate(gx, gy);
+      ctx.rotate(a);
+      ctx.fillStyle = "#ffb300";
+      ctx.fillRect(-2.5, -2, 5, 4);
+      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = "#663d00";
+      ctx.strokeRect(-2.5, -2, 5, 4);
+      ctx.restore();
+    }
+    ctx.restore();
 
     // Turret outer brass ring
     ctx.beginPath();
-    ctx.ellipse(ox, oy + 10, 44, 13, 0, 0, Math.PI * 2);
-    const pedestalGrad = ctx.createRadialGradient(ox, oy + 8, 6, ox, oy + 10, 44);
-    pedestalGrad.addColorStop(0, "#2e254e");
+    ctx.ellipse(ox, oy + 10, 42, 12, 0, 0, Math.PI * 2);
+    const pedestalGrad = ctx.createRadialGradient(ox, oy + 8, 6, ox, oy + 10, 42);
+    pedestalGrad.addColorStop(0, "#332a58");
     pedestalGrad.addColorStop(0.7, "#1b1633");
     pedestalGrad.addColorStop(1, "#0e0b1d");
     ctx.fillStyle = pedestalGrad;
@@ -239,59 +259,94 @@ export class CanvasRenderer {
     // Mechanical rivets around pedestal rim
     for (let i = 0; i < 8; i++) {
       const a = (i * Math.PI) / 4;
-      const rx = ox + Math.cos(a) * 38;
-      const ry = oy + 10 + Math.sin(a) * 10;
+      const rx = ox + Math.cos(a) * 36;
+      const ry = oy + 10 + Math.sin(a) * 9;
       ctx.beginPath();
       ctx.arc(rx, ry, 1.8, 0, Math.PI * 2);
-      ctx.fillStyle = "#ffd600";
+      ctx.fillStyle = "#ffe082";
       ctx.fill();
     }
 
     // Inner steel bearing disc
     ctx.beginPath();
-    ctx.ellipse(ox, oy + 8, 30, 9, 0, 0, Math.PI * 2);
+    ctx.ellipse(ox, oy + 8, 28, 8, 0, 0, Math.PI * 2);
     ctx.fillStyle = "#2b2347";
     ctx.fill();
     ctx.lineWidth = 1;
-    ctx.strokeStyle = "rgba(255, 214, 0, 0.35)";
+    ctx.strokeStyle = "rgba(255, 214, 0, 0.4)";
     ctx.stroke();
 
-    // 2. Chunky 90s Arcade Mechanical Pointer Arrow (Rotates with cannon angle)
+    // 2. Brass Cannon Barrel Cradle & Mechanical Directional Arrow
     ctx.save();
     ctx.translate(ox, oy);
     ctx.rotate(-angle + Math.PI / 2);
 
+    // Heavy Brass Launcher Cradle (side guide brackets flanking bubble)
+    const brassGrad = ctx.createLinearGradient(-26, 0, 26, 0);
+    brassGrad.addColorStop(0, "#ff8f00");
+    brassGrad.addColorStop(0.25, "#ffd54f");
+    brassGrad.addColorStop(0.5, "#fff9c4");
+    brassGrad.addColorStop(0.75, "#ffb300");
+    brassGrad.addColorStop(1, "#b35900");
+
+    // Left cannon guide bracket
+    ctx.beginPath();
+    ctx.rect(-24, -14, 6, 26);
+    ctx.fillStyle = brassGrad;
+    ctx.fill();
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = "#16102a";
+    ctx.stroke();
+
+    // Right cannon guide bracket
+    ctx.beginPath();
+    ctx.rect(18, -14, 6, 26);
+    ctx.fillStyle = brassGrad;
+    ctx.fill();
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = "#16102a";
+    ctx.stroke();
+
+    // Rear mechanical cradle crossbar
+    ctx.beginPath();
+    ctx.rect(-20, 8, 40, 6);
+    ctx.fillStyle = "#ffb300";
+    ctx.fill();
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = "#16102a";
+    ctx.stroke();
+
     // Classic arcade arrow pointer shape
     ctx.beginPath();
-    ctx.moveTo(0, -64);         // Sharp arrowhead tip
-    ctx.lineTo(10, -48);        // Right wing outer
-    ctx.lineTo(4, -49);         // Right wing inner notch
-    ctx.lineTo(3.2, -24);       // Right shaft
-    ctx.lineTo(-3.2, -24);      // Left shaft
-    ctx.lineTo(-4, -49);        // Left wing inner notch
-    ctx.lineTo(-10, -48);       // Left wing outer
+    ctx.moveTo(0, -66);         // Sharp arrowhead tip
+    ctx.lineTo(11, -49);        // Right wing outer
+    ctx.lineTo(4.5, -50);       // Right wing inner notch
+    ctx.lineTo(3.5, -24);       // Right shaft
+    ctx.lineTo(-3.5, -24);      // Left shaft
+    ctx.lineTo(-4.5, -50);      // Left wing inner notch
+    ctx.lineTo(-11, -49);       // Left wing outer
     ctx.closePath();
 
     // Warm golden-amber gradient for mechanical arrow
-    const arrowGrad = ctx.createLinearGradient(0, -24, 0, -64);
+    const arrowGrad = ctx.createLinearGradient(0, -24, 0, -66);
     arrowGrad.addColorStop(0, "#ff9100");
     arrowGrad.addColorStop(0.65, "#ffd600");
-    arrowGrad.addColorStop(1, "#fff9c4");
+    arrowGrad.addColorStop(1, "#fffde7");
 
     ctx.fillStyle = arrowGrad;
     ctx.fill();
 
     // Crisp dark comic/arcade outline
-    ctx.lineWidth = 1.8;
-    ctx.strokeStyle = "#18122b";
+    ctx.lineWidth = 2.0;
+    ctx.strokeStyle = "#16102a";
     ctx.stroke();
 
     // Arrow center spine highlight
     ctx.beginPath();
     ctx.moveTo(0, -26);
-    ctx.lineTo(0, -61);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.lineWidth = 1.2;
+    ctx.lineTo(0, -63);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.lineWidth = 1.4;
     ctx.stroke();
 
     ctx.restore();
@@ -406,6 +461,67 @@ export class CanvasRenderer {
       ctx.shadowBlur = 6;
       ctx.textAlign = 'center';
       ctx.fillText(sp.text, sp.x, sp.y);
+      ctx.restore();
+    }
+
+    // 90s Comic Book Starburst Popups (POP!, GREAT!, CRASH!, BOOM!)
+    for (const cb of effects.activeComicBursts) {
+      ctx.save();
+      ctx.globalAlpha = cb.alpha;
+      ctx.translate(cb.x, cb.y);
+      ctx.rotate(cb.rotation);
+      ctx.scale(cb.scale, cb.scale);
+
+      // Draw 14-point comic starburst
+      const spikes = 14;
+      const outerR = 36;
+      const innerR = 22;
+      const step = Math.PI / spikes;
+
+      // Dark comic background outline
+      ctx.beginPath();
+      for (let i = 0; i < spikes; i++) {
+        const curA = (i * 2) * step - Math.PI / 2;
+        const nextA = (i * 2 + 1) * step - Math.PI / 2;
+        const ox = Math.cos(curA) * (outerR + 2.5);
+        const oy = Math.sin(curA) * (outerR + 2.5);
+        const ix = Math.cos(nextA) * (innerR + 1.5);
+        const iy = Math.sin(nextA) * (innerR + 1.5);
+        if (i === 0) ctx.moveTo(ox, oy);
+        else ctx.lineTo(ox, oy);
+        ctx.lineTo(ix, iy);
+      }
+      ctx.closePath();
+      ctx.fillStyle = "#100a20";
+      ctx.fill();
+
+      // Main starburst fill
+      ctx.beginPath();
+      for (let i = 0; i < spikes; i++) {
+        const curA = (i * 2) * step - Math.PI / 2;
+        const nextA = (i * 2 + 1) * step - Math.PI / 2;
+        const ox = Math.cos(curA) * outerR;
+        const oy = Math.sin(curA) * outerR;
+        const ix = Math.cos(nextA) * innerR;
+        const iy = Math.sin(nextA) * innerR;
+        if (i === 0) ctx.moveTo(ox, oy);
+        else ctx.lineTo(ox, oy);
+        ctx.lineTo(ix, iy);
+      }
+      ctx.closePath();
+      ctx.fillStyle = cb.color;
+      ctx.fill();
+      ctx.lineWidth = 1.8;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+
+      // Bold comic arcade text
+      ctx.font = '800 13px "Fredoka", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = cb.textColor;
+      ctx.fillText(cb.text, 0, 1);
+
       ctx.restore();
     }
   }
