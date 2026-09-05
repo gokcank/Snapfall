@@ -633,7 +633,7 @@ canvas#gameCanvas {
 
 /* Modals & Overlays */
 .modal-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(5, 5, 10, 0.88);
   backdrop-filter: blur(16px);
@@ -663,7 +663,9 @@ canvas#gameCanvas {
   align-items: center;
   text-align: center;
   position: relative;
-  overflow: hidden;
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
